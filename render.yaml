@@ -1,0 +1,33 @@
+## Render Blueprint — https://render.com/docs/blueprint-spec
+## Deploys apps/web as a static site from this monorepo.
+services:
+  - type: web
+    name: lending-force-web
+    runtime: static
+    plan: free
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter web build
+    staticPublishPath: apps/web/dist
+    pullRequestPreviewsEnabled: true
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+    routes:
+      # SPA fallback — any unknown path serves index.html
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: PNPM_VERSION
+        value: 9.0.0
