@@ -459,3 +459,83 @@ hr {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- PIN gate ---- */
+.pin-gate {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #050505 0%, #1d1d1d 100%);
+  z-index: 1000;
+  padding: 24px;
+}
+.pin-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  border-top: 4px solid var(--brand-red);
+  text-align: center;
+}
+.pin-card .brand-kicker {
+  justify-content: center;
+  color: var(--ink);
+}
+.pin-card h1 {
+  margin: 8px 0 4px;
+  font-size: 20px;
+}
+.pin-card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.pin-card input {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 22px;
+  text-align: center;
+  letter-spacing: 0.4em;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 12px;
+}
+.pin-card input:focus {
+  border-color: var(--brand-red);
+  box-shadow: 0 0 0 3px var(--brand-soft-red);
+}
+.pin-card button {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--brand-red);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+.pin-card button:hover:not(:disabled) {
+  background: var(--brand-red-dark);
+}
+.pin-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.pin-error {
+  background: var(--brand-soft-red);
+  color: var(--brand-red-dark);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.pin-foot {
+  margin-top: 14px !important;
+  font-size: 11px !important;
+  color: var(--muted) !important;
+}

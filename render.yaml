@@ -32,3 +32,9 @@ services:
         value: 20.11.1
       - key: PNPM_VERSION
         value: 9.0.0
+      # SHA-256 hash of the company PIN. To rotate: generate a new hash and
+      # override this value in Render dashboard (Settings → Environment).
+      # PowerShell one-liner to hash a new PIN:
+      #   $p='NEWPIN'; ([System.Security.Cryptography.SHA256]::Create().ComputeHash([Text.Encoding]::UTF8.GetBytes($p)) | %{ $_.ToString('x2') }) -join ''
+      - key: VITE_APP_PIN_HASH
+        value: a149a0887f291c18ce725e842476bf129b953457cfa5189714bf4724b3024430

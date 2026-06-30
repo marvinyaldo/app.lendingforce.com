@@ -4,8 +4,17 @@ import { Snapshot } from "./components/Snapshot.js";
 import { GuidedScreen } from "./components/GuidedScreen.js";
 import { ExportScreen } from "./components/ExportScreen.js";
 import { RebuttalDrawer } from "./components/RebuttalDrawer.js";
+import { PinGate } from "./components/PinGate.js";
 
 export function App() {
+  return (
+    <PinGate>
+      <AppInner />
+    </PinGate>
+  );
+}
+
+function AppInner() {
   const store = useCallStore();
 
   return (
@@ -28,10 +37,6 @@ export function App() {
           <span className="bar" /> Lending Force
         </div>
         <h1>Lending Force Guided Call Script</h1>
-        <p>
-          Branded in Lending Force colors with guided question flow, response routes,
-          right-side rebuttal drawer, and export tools.
-        </p>
       </header>
 
       <div className="layout">
