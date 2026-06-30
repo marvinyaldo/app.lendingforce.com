@@ -7,6 +7,8 @@ services:
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter web build
     staticPublishPath: apps/web/dist
     pullRequestPreviewsEnabled: true
+    domains:
+      - app.lendingforce.com
     headers:
       - path: /assets/*
         name: Cache-Control
