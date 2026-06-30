@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { flow, rebuttals, sectionOrder } from "@lf/call-script";
 import type { CallData, CallState, RebuttalKey, SectionId } from "@lf/types";
 
@@ -9,6 +9,21 @@ const initialState: CallState = { section: "intro", index: 0, route: "" };
 interface PersistShape {
   data: CallData;
   state: CallState;
+}
+
+function readSnapshot(): PersistShape | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const obj = JSON.parse(raw) as Partial<PersistShape>;
+    if (!obj || typeof obj !== "object") return null;
+    return {
+      data: obj.data ?? {},
+      state: obj.state ?? initialState
+    };
+  } catch {
+    return null;
+  }
 }
 
 /** Replace {{key}} placeholders in `text` with values from `data`. */
@@ -42,11 +57,31 @@ export interface UseCallStore {
 }
 
 export function useCallStore(): UseCallStore {
-  const [state, setState] = useState<CallState>(initialState);
-  const [data, setData] = useState<CallData>({});
+  // Hydrate synchronously from localStorage so the first render shows saved work.
+  const initial = typeof window !== "undefined" ? readSnapshot() : null;
+  const [state, setState] = useState<CallState>(initial?.state ?? initialState);
+  const [data, setData] = useState<CallData>(initial?.data ?? {});
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeRebuttal, setActiveRebuttal] = useState<RebuttalKey | null>(null);
   const [screen, setScreen] = useState<"guided" | "export">("guided");
+
+  // Auto-save: debounce writes so rapid typing doesn't thrash localStorage.
+  const saveTimer = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      try {
+        const payload: PersistShape = { data, state };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch {
+        /* quota or privacy mode — ignore */
+      }
+    }, 250);
+    return () => {
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    };
+  }, [data, state]);
 
   const setField = useCallback((key: string, value: string) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -154,21 +189,21 @@ export function useCallStore(): UseCallStore {
   );
 
   const save = useCallback(() => {
-    const payload: PersistShape = { data, state };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    // Auto-save runs on every change; this is just user feedback.
+    try {
+      const payload: PersistShape = { data, state };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      /* ignore */
+    }
     alert("Saved.");
   }, [data, state]);
 
   const load = useCallback(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    try {
-      const obj = JSON.parse(raw) as Partial<PersistShape>;
-      if (obj.data) setData(obj.data);
-      if (obj.state) setState(obj.state);
-    } catch {
-      /* ignore malformed payload */
-    }
+    const snap = readSnapshot();
+    if (!snap) return;
+    setData(snap.data);
+    setState(snap.state);
   }, []);
 
   const clearAll = useCallback(() => {
