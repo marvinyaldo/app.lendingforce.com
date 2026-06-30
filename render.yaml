@@ -4,7 +4,6 @@ services:
   - type: web
     name: lending-force-web
     runtime: static
-    plan: free
     buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter web build
     staticPublishPath: apps/web/dist
     pullRequestPreviewsEnabled: true
