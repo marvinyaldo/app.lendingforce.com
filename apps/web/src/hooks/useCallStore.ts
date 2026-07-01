@@ -1,8 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { flow, rebuttals, sectionOrder } from "@lf/call-script";
+import { brandFields, flow, rebuttals, sampleBrand, sectionOrder } from "@lf/call-script";
 import type { CallData, CallState, RebuttalKey, SectionId } from "@lf/types";
 
 const STORAGE_KEY = "lfGuidedCallV2";
+// Brand lives in its own key so it persists across calls and survives "Clear All".
+const BRAND_KEY = "lfBrandV1";
+
+/** Read the saved personal brand from its dedicated key. */
+function readBrand(): CallData {
+  try {
+    const raw = localStorage.getItem(BRAND_KEY);
+    if (!raw) return {};
+    const obj = JSON.parse(raw) as unknown;
+    return obj && typeof obj === "object" ? (obj as CallData) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** Pull just the brand fields out of the full call data. */
+function pickBrand(data: CallData): CallData {
+  const out: CallData = {};
+  for (const k of brandFields) {
+    if (data[k]) out[k] = data[k];
+  }
+  return out;
+}
 
 const initialState: CallState = { section: "intro", index: 0, route: "" };
 
@@ -59,8 +82,10 @@ export interface UseCallStore {
 export function useCallStore(): UseCallStore {
   // Hydrate synchronously from localStorage so the first render shows saved work.
   const initial = typeof window !== "undefined" ? readSnapshot() : null;
+  const savedBrand = typeof window !== "undefined" ? readBrand() : {};
   const [state, setState] = useState<CallState>(initial?.state ?? initialState);
-  const [data, setData] = useState<CallData>(initial?.data ?? {});
+  // Brand key wins over the snapshot so the LO's saved brand is always present.
+  const [data, setData] = useState<CallData>({ ...(initial?.data ?? {}), ...savedBrand });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeRebuttal, setActiveRebuttal] = useState<RebuttalKey | null>(null);
   const [screen, setScreen] = useState<"guided" | "export">("guided");
@@ -82,6 +107,17 @@ export function useCallStore(): UseCallStore {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
   }, [data, state]);
+
+  // Persist the personal brand to its own key whenever any brand field changes.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(BRAND_KEY, JSON.stringify(pickBrand(data)));
+    } catch {
+      /* quota or privacy mode — ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.brandPositioning, data.brandWhy, data.brandProof]);
 
   const setField = useCallback((key: string, value: string) => {
     setData((d) => ({ ...d, [key]: value }));
@@ -153,6 +189,12 @@ export function useCallStore(): UseCallStore {
       }
       if (Object.keys(updates).length) {
         setData((d) => ({ ...d, ...updates }));
+      }
+
+      // Drop in the ready-made personal brand without navigating away.
+      if (finalAction === "presetBrand") {
+        setData((d) => ({ ...d, ...sampleBrand }));
+        return;
       }
 
       // Conditional routing: when:key=value?actionIfTrue|actionIfFalse
@@ -233,9 +275,10 @@ export function useCallStore(): UseCallStore {
   }, []);
 
   const clearAll = useCallback(() => {
-    if (!confirm("Clear all data?")) return;
+    if (!confirm("Clear all data? (Your saved personal brand will be kept.)")) return;
     localStorage.removeItem(STORAGE_KEY);
-    setData({});
+    // Keep the LO's brand — it lives in its own key and should survive a clear.
+    setData(readBrand());
     setState(initialState);
     setScreen("guided");
   }, []);

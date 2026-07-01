@@ -43,13 +43,16 @@ export const flow: Flow = {
         "Proof or credibility: {{brandProof}}\n\n" +
         "Transition: The next steps are easy. I\u2019m going to ask a few questions so I can understand what matters most, then we\u2019ll decide together if there is a solution worth pursuing.",
       coach:
-        "This stays blank/customizable so each LO can personalize it without changing the Lending Force call structure.",
+        "This stays blank/customizable so each LO can personalize it without changing the Lending Force call structure. Don't have one yet? Tap “Use sample brand” to drop in a ready-made version, then edit to taste. Your brand is saved on this device and won't be wiped when you clear a call.",
       fields: [
         ["brandPositioning", "Rep Positioning Statement", "textarea"],
         ["brandWhy", "Why Clients Choose Me", "textarea"],
         ["brandProof", "Proof / Credibility", "textarea"]
       ],
-      routes: [["Move to goals", "goals"]]
+      routes: [
+        ["Use sample brand", "presetBrand"],
+        ["Move to goals", "goals"]
+      ]
     }
   ],
   goals: [
