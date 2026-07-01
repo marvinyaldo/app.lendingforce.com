@@ -15,6 +15,7 @@ const order: { key: RebuttalKey; label: string }[] = [
   { key: "busy", label: "Busy" },
   { key: "sendInfo", label: "Send Info" },
   { key: "howGotInfo", label: "How'd You Get My Info?" },
+  { key: "oldInquiry", label: "Old Inquiry" },
   { key: "creditPull", label: "Credit Concern" },
   { key: "lowRate", label: "Low Rate" },
   { key: "closingCosts", label: "Closing Costs" },

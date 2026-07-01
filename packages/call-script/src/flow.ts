@@ -19,7 +19,8 @@ export const flow: Flow = {
         ["Not interested", "rebuttal:notInterested"],
         ["Busy", "rebuttal:busy"],
         ["Send info", "rebuttal:sendInfo"],
-        ["How'd you get my info?", "rebuttal:howGotInfo"]
+        ["How'd you get my info?", "rebuttal:howGotInfo"],
+        ["That was an old inquiry", "rebuttal:oldInquiry"]
       ]
     },
     {

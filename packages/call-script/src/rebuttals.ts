@@ -26,6 +26,11 @@ export const rebuttals: Rebuttals = {
       "Either way, the reason we reached out is simple: based on what we saw, we believe there may be an option to help you save on your loan. That is the only reason I am calling.\n\n" +
       "Would it be worth a couple of quick questions to see whether that is actually the case for you?"
   ],
+  oldInquiry: [
+    "That Was an Old Inquiry",
+    "I hear you, and that makes sense. We usually reach back out to clients every few months, because when the market shifts enough it can open up an option that was not there before.\n\n" +
+      "Let me ask — when you first inquired, what were you originally trying to accomplish? Were you looking to lower your payment, or were you trying to pull some cash out?"
+  ],
   creditPull: [
     "Credit Pull Concern",
     "That makes sense. Your credit matters, and I would not want you doing anything unnecessary either.\n\n" +
