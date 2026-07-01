@@ -533,7 +533,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Co-Borrower (if any)",
       script:
-        "Is there a co-borrower on this loan? If so, capture their details. If not, skip to the next step.",
+        "Will anyone be on the loan with you \u2014 a spouse or a co-borrower?\n\n" +
+        "If so, I\u2019ll grab their information the same way. If it\u2019s just you, we\u2019ll keep moving.",
       fields: [
         ["coBorrowerName", "Co-Borrower Full Name"],
         ["coBorrowerSsn", "Co-Borrower SSN"],
@@ -550,7 +551,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Employment & Income",
       script:
-        "Capture current employment and how the borrower is paid. Break out the monthly income by type.",
+        "Let\u2019s confirm your work and income. Who\u2019s your employer, what\u2019s your position, and how long have you been there?\n\n" +
+        "Then we\u2019ll break down the monthly income \u2014 base pay, plus any overtime, bonus, or commission.",
       fields: [
         ["employer", "Employer / Business Name"],
         ["borrowerPosition", "Position / Title"],
@@ -576,7 +578,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Additional & Previous Income",
       script:
-        "Any other income sources (Social Security, pension, rental, child support, etc.) and prior employment if less than two years at the current job.",
+        "Do you have any other income we should count \u2014 things like rental income, Social Security, a pension, or a side business?\n\n" +
+        "And if you\u2019ve been at your current job less than two years, tell me a little about the job before it.",
       fields: [
         ["otherIncomeSource", "Other Income Source"],
         ["otherIncomeAmount", "Other Income (monthly)"],
@@ -590,7 +593,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Assets",
       script:
-        "List the borrower\u2019s accounts and reserves. Include the institution and account number where possible.",
+        "Now let\u2019s document your accounts and reserves \u2014 checking, savings, and any retirement.\n\n" +
+        "This actually strengthens your file, so we want to capture all of it. Where possible I\u2019ll note the bank and account number.",
       fields: [
         ["checkingBank", "Checking Institution"],
         ["checkingAccountNumber", "Checking Account #"],
@@ -609,7 +613,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Liabilities",
       script:
-        "List the borrower\u2019s debts: creditor, type, balance, and monthly payment. Use the summary box for anything beyond the three slots.",
+        "Let\u2019s get your monthly debts on paper \u2014 this is exactly what we reviewed earlier, so we\u2019re just formalizing it.\n\n" +
+        "For each one, I\u2019ll note the creditor, the balance, and the monthly payment.",
       fields: [
         ["liability1Creditor", "Liability 1 \u2014 Creditor"],
         ["liability1Type", "Liability 1 \u2014 Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
@@ -632,7 +637,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Real Estate Owned",
       script:
-        "Does the borrower own other real estate? Capture the property, value, status, and any rental income.",
+        "Do you own any other real estate besides this home?\n\n" +
+        "If so, let\u2019s note the property, what it\u2019s worth, and whether there\u2019s a loan or rental income on it.",
       fields: [
         ["reoAddress", "REO Property Address", "textarea"],
         ["reoValue", "REO Market Value"],
@@ -646,7 +652,7 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Loan & Property",
       script:
-        "Confirm the loan terms and the subject property details.",
+        "Let\u2019s confirm the loan we put together and the details on the property itself, so everything on the application matches what we discussed.",
       fields: [
         ["loanPurpose", "Loan Purpose", "select", "Purchase|Refinance|Cash-Out Refinance|HELOC"],
         ["loanAmount", "Loan Amount"],
@@ -673,7 +679,7 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Declarations",
       script:
-        "Standard URLA declarations. Mark each Yes or No. Document details in the declaration notes on the earlier step if a Yes needs explanation.",
+        "Last set \u2014 these are standard questions every application requires. I\u2019ll run through them quickly; just answer yes or no and I\u2019ll note anything that needs a detail.",
       fields: [
         ["declOccupyPrimary", "Will occupy as primary residence?", "select", "Yes|No"],
         ["declOwnershipInterest", "Ownership interest in property in last 3 years?", "select", "No|Yes"],
@@ -697,7 +703,7 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Loan Originator",
       script:
-        "Finally, confirm the loan originator information for the file.",
+        "That completes your application \u2014 great job, this is a big step. Let me confirm my information as your loan officer, and then we\u2019ll get everything submitted and moving.",
       fields: [
         ["loName", "Loan Originator Name"],
         ["loNmls", "LO NMLS ID"],
