@@ -56,6 +56,7 @@ export type RebuttalKey =
   | "notInterested"
   | "busy"
   | "sendInfo"
+  | "howGotInfo"
   | "creditPull"
   | "lowRate"
   | "closingCosts"

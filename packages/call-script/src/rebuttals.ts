@@ -19,6 +19,13 @@ export const rebuttals: Rebuttals = {
       "The only issue is that if I send generic numbers, they may not match your actual situation. I would rather send something accurate.\n\n" +
       "Let me ask one or two quick questions first so what I send actually applies to you. Are you mainly looking to lower the payment, consolidate debt, or access cash?"
   ],
+  howGotInfo: [
+    "How Did You Get My Info?",
+    "Great question, and I completely understand asking.\n\n" +
+      "We get our information from a variety of sources — public records and data, or in some cases you applied or expressed interest with one of our lending partners.\n\n" +
+      "Either way, the reason we reached out is simple: based on what we saw, we believe there may be an option to help you save on your loan. That is the only reason I am calling.\n\n" +
+      "Would it be worth a couple of quick questions to see whether that is actually the case for you?"
+  ],
   creditPull: [
     "Credit Pull Concern",
     "That makes sense. Your credit matters, and I would not want you doing anything unnecessary either.\n\n" +

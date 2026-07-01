@@ -37,10 +37,10 @@ export function ExportScreen({ data, onClear }: ExportScreenProps) {
           <button
             className="warning"
             onClick={() =>
-              download("lending-force-mismo-style-beta.xml", toMISMO(data), "application/xml")
+              download("lending-force-mismo-3.4.xml", toMISMO(data), "application/xml")
             }
           >
-            Download MISMO-Style XML Beta
+            Download MISMO 3.4 (Arive)
           </button>
           <button onClick={() => setPreview(toJSON(data))}>Preview</button>
           <button className="danger" onClick={onClear}>

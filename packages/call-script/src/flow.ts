@@ -18,7 +18,8 @@ export const flow: Flow = {
         ["Client agrees", "brand"],
         ["Not interested", "rebuttal:notInterested"],
         ["Busy", "rebuttal:busy"],
-        ["Send info", "rebuttal:sendInfo"]
+        ["Send info", "rebuttal:sendInfo"],
+        ["How'd you get my info?", "rebuttal:howGotInfo"]
       ]
     },
     {
