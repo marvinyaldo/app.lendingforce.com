@@ -221,10 +221,10 @@ export const flow: Flow = {
         "Our process is designed with you in mind \u2014 your credit score is just as important to us as it is to you. We\u2019re going to pull a soft copy of your credit report, which means there\u2019s no impact at all on your score.\n\n" +
         "Go ahead with your date of birth and Social when you\u2019re ready.",
       coach:
-        "Follow company-approved credit authorization and privacy process. Do not store full SSNs in this local prototype.",
+        "Even though this is a soft pull, still collect the borrower's full SSN and DOB here — it is required to run credit and carries into the 1003. Follow company-approved credit authorization and privacy process.",
       fields: [
         ["borrowerDob", "DOB"],
-        ["borrowerSsn", "SSN"],
+        ["borrowerSsn", "SSN (full)"],
         ["estimatedCreditScore", "Estimated Credit Score"],
         ["creditEvents", "Credit Events", "textarea"]
       ],
