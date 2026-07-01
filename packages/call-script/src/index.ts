@@ -31,7 +31,8 @@ export const sectionOrder: SectionId[] = [
   "assets",
   "presentation",
   "propertyConditions",
-  "declarations"
+  "declarations",
+  "application"
 ];
 
 /** Pretty-print a section id ("propertyConditions" -> "Property Conditions"). */

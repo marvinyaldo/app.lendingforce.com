@@ -19,7 +19,8 @@ const sections: { id: SectionId; label: string }[] = [
   { id: "assets", label: "Assets" },
   { id: "presentation", label: "Presentation" },
   { id: "propertyConditions", label: "Property Conditions" },
-  { id: "declarations", label: "Declarations" }
+  { id: "declarations", label: "Declarations" },
+  { id: "application", label: "Full 1003 Application" }
 ];
 
 export function Sidebar({

@@ -4,12 +4,11 @@ import { num, xml } from "./escape.js";
 /* ------------------------------------------------------------------ *
  * MISMO 3.4 export (ULAD / Fannie 3.4 flavor) for Arive import.
  *
- * This maps the data captured in the guided call into a MISMO 3.4
- * message. It is a best-effort mapping: only populated fields are
- * emitted, enum values are normalized to MISMO enumerations, and any
- * Lending Force-specific data that has no MISMO home is carried in the
- * DEAL EXTENSION so nothing is lost. Validate against Arive's importer
- * before relying on it in production.
+ * Maps the full 1003 captured in the guided call + application section
+ * into a MISMO 3.4 message. Best-effort mapping: only populated fields
+ * are emitted, enums are normalized to MISMO enumerations, and any data
+ * without a native MISMO home is carried in the DEAL EXTENSION so
+ * nothing is lost. Validate against Arive's importer before production.
  * ------------------------------------------------------------------ */
 
 /** <Tag>escaped</Tag>, or "" when empty so we never emit hollow nodes. */
@@ -28,6 +27,15 @@ function n(tag: string, value: unknown): string {
 function wrap(tag: string, inner: string, attrs = ""): string {
   if (!inner) return "";
   return `<${tag}${attrs ? " " + attrs : ""}>${inner}</${tag}>`;
+}
+
+/** Yes/No/boolean-ish string -> "true"/"false"/"" */
+function boolIndicator(tag: string, value: unknown): string {
+  const s = String(value ?? "").trim().toLowerCase();
+  if (!s) return "";
+  if (["yes", "y", "true", "1"].includes(s)) return `<${tag}>true</${tag}>`;
+  if (["no", "n", "false", "0"].includes(s)) return `<${tag}>false</${tag}>`;
+  return "";
 }
 
 function pad(x: string): string {
@@ -67,7 +75,6 @@ function purposeType(v: unknown): string {
   return "";
 }
 
-/** True when the purpose implies a cash-out refinance. */
 function isCashOut(v: unknown): boolean {
   return String(v ?? "").toLowerCase().includes("cash");
 }
@@ -82,13 +89,105 @@ function mortgageType(v: unknown): string {
   return "";
 }
 
-/** Split a full name into first / middle / last for the MISMO NAME node. */
-function splitName(full: unknown, firstFallback: unknown) {
+/** citizenship -> MISMO CitizenshipResidencyType */
+function citizenshipType(v: unknown): string {
+  const s = String(v ?? "").toLowerCase();
+  if (s.includes("us citizen") || s === "citizen") return "USCitizen";
+  if (s.includes("permanent")) return "PermanentResidentAlien";
+  if (s.includes("non-permanent") || s.includes("non permanent")) return "NonPermanentResidentAlien";
+  return "";
+}
+
+/** marital status -> MISMO MaritalStatusType */
+function maritalType(v: unknown): string {
+  const s = String(v ?? "").toLowerCase();
+  if (s.includes("married")) return "Married";
+  if (s.includes("separated")) return "Separated";
+  if (s.includes("unmarried") || s.includes("single")) return "Unmarried";
+  return "";
+}
+
+/** own/rent -> MISMO BorrowerResidencyBasisType */
+function residencyBasis(v: unknown): string {
+  const s = String(v ?? "").toLowerCase();
+  if (s.includes("own")) return "Own";
+  if (s.includes("rent")) return "Rent";
+  if (s.includes("no primary") || s.includes("rent free") || s.includes("free")) return "LivingRentFree";
+  return "";
+}
+
+/** liability type -> MISMO LiabilityType */
+function liabilityType(v: unknown): string {
+  const s = String(v ?? "").toLowerCase();
+  if (s.includes("revolv")) return "Revolving";
+  if (s.includes("install")) return "Installment";
+  if (s.includes("mortgage")) return "MortgageLoan";
+  if (s.includes("lease")) return "LeasePayment";
+  if (s) return "Other";
+  return "";
+}
+
+/** Build a MISMO ADDRESS node from parts. */
+function addressNode(
+  street: unknown,
+  city: unknown,
+  state: unknown,
+  zip: unknown,
+  county?: unknown,
+  country?: unknown
+): string {
+  return wrap(
+    "ADDRESS",
+    t("AddressLineText", street) +
+      t("CityName", city) +
+      t("CountryCode", country) +
+      t("CountyName", county) +
+      t("PostalCode", zip) +
+      t("StateCode", state)
+  );
+}
+
+/** A telephone CONTACT_POINT with a role (Home/Mobile/Work). */
+function phonePoint(role: string, value: unknown): string {
+  const v = num(value);
+  if (!v) return "";
+  return wrap(
+    "CONTACT_POINT",
+    wrap("CONTACT_POINT_DETAIL", t("ContactPointRoleType", role)) +
+      wrap("CONTACT_POINT_TELEPHONE", `<ContactPointTelephoneValue>${v}</ContactPointTelephoneValue>`)
+  );
+}
+
+/** An email CONTACT_POINT. */
+function emailPoint(value: unknown): string {
+  const v = xml(value);
+  if (!v) return "";
+  return wrap(
+    "CONTACT_POINT",
+    wrap("CONTACT_POINT_DETAIL", t("ContactPointRoleType", "Home")) +
+      wrap("CONTACT_POINT_EMAIL", `<ContactPointEmailValue>${v}</ContactPointEmailValue>`)
+  );
+}
+
+/** A MISMO NAME node from separate parts (falls back to a full name). */
+function nameNode(first: unknown, middle: unknown, last: unknown, full: unknown, suffix?: unknown): string {
+  return wrap(
+    "NAME",
+    t("FirstName", first) +
+      t("FullName", full) +
+      t("LastName", last) +
+      t("MiddleName", middle) +
+      t("SuffixName", suffix)
+  );
+}
+
+/** Split a single full name into first/middle/last. */
+function splitName(full: unknown) {
   const parts = String(full ?? "")
     .trim()
     .split(/\s+/)
     .filter(Boolean);
-  if (parts.length === 0) return { first: String(firstFallback ?? ""), middle: "", last: "" };
+  if (parts.length === 0) return { first: "", middle: "", last: "" };
   if (parts.length === 1) return { first: parts[0]!, middle: "", last: "" };
   return {
     first: parts[0]!,
@@ -97,28 +196,58 @@ function splitName(full: unknown, firstFallback: unknown) {
   };
 }
 
-/** One ASSET node, or "" when no amount is present. */
-function assetNode(type: string, value: unknown): string {
+/** One CURRENT_INCOME_ITEM. */
+function incomeItem(type: string, value: unknown): string {
+  const v = num(value);
+  if (!v) return "";
+  return wrap(
+    "CURRENT_INCOME_ITEM",
+    wrap(
+      "CURRENT_INCOME_ITEM_DETAIL",
+      `<CurrentIncomeMonthlyTotalAmount>${v}</CurrentIncomeMonthlyTotalAmount>` + t("IncomeType", type)
+    )
+  );
+}
+
+/** One ASSET node with optional institution/account. */
+function assetNode(type: string, value: unknown, institution?: unknown, account?: unknown): string {
   const amt = num(value);
   if (!amt) return "";
   return wrap(
     "ASSET",
     wrap(
       "ASSET_DETAIL",
-      `<AssetCashOrMarketValueAmount>${amt}</AssetCashOrMarketValueAmount>` + t("AssetType", type)
-    )
+      t("AssetAccountIdentifier", account) +
+        `<AssetCashOrMarketValueAmount>${amt}</AssetCashOrMarketValueAmount>` +
+        t("AssetType", type)
+    ) + wrap("ASSET_HOLDER", nameNode("", "", "", institution))
   );
 }
 
-export function toMISMO(
-  data: CallData,
-  createdAt: string = new Date().toISOString()
-): string {
+/** One LIABILITY node. */
+function liabilityNode(creditor: unknown, type: unknown, balance: unknown, payment: unknown): string {
+  const bal = num(balance);
+  const pay = num(payment);
+  if (!bal && !pay && !xml(creditor)) return "";
+  return wrap(
+    "LIABILITY",
+    wrap(
+      "LIABILITY_DETAIL",
+      (pay ? `<LiabilityMonthlyPaymentAmount>${pay}</LiabilityMonthlyPaymentAmount>` : "") +
+        t("LiabilityType", liabilityType(type)) +
+        (bal ? `<LiabilityUnpaidBalanceAmount>${bal}</LiabilityUnpaidBalanceAmount>` : "")
+    ) + wrap("LIABILITY_HOLDER", nameNode("", "", "", creditor))
+  );
+}
+
+export function toMISMO(data: CallData, createdAt: string = new Date().toISOString()): string {
   // --- ASSETS ---
   const assets = wrap(
     "ASSETS",
-    assetNode("CheckingAccount", data.checkingSavings) +
-      assetNode("RetirementFund", data.retirementAssets)
+    assetNode("CheckingAccount", data.checkingSavings, data.checkingBank, data.checkingAccountNumber) +
+      assetNode("SavingsAccount", data.savingsBalance, data.savingsBank, data.savingsAccountNumber) +
+      assetNode("RetirementFund", data.retirementAssets, data.retirementInstitution) +
+      assetNode("Other", data.otherAssetsValue, data.otherAssetsDescription)
   );
 
   // --- COLLATERALS / SUBJECT PROPERTY ---
@@ -128,14 +257,30 @@ export function toMISMO(
       "COLLATERAL",
       wrap(
         "SUBJECT_PROPERTY",
-        wrap("ADDRESS", t("AddressLineText", data.propertyAddress)) +
+        addressNode(
+          data.propertyAddress,
+          data.propertyCity,
+          data.propertyState,
+          data.propertyZip,
+          data.propertyCounty
+        ) +
           wrap(
             "PROPERTY_DETAIL",
-            n("PropertyEstimatedValueAmount", data.estimatedValue) +
+            n("FinancedUnitCount", data.propertyUnits) +
+              n("PropertyEstimatedValueAmount", data.estimatedValue) +
+              n("PropertyStructureBuiltYear", data.propertyYearBuilt) +
               t("PropertyUsageType", occupancyType(data.occupancy))
           )
       )
     )
+  );
+
+  // --- LIABILITIES ---
+  const liabilities = wrap(
+    "LIABILITIES",
+    liabilityNode(data.liability1Creditor, data.liability1Type, data.liability1Balance, data.liability1Payment) +
+      liabilityNode(data.liability2Creditor, data.liability2Type, data.liability2Balance, data.liability2Payment) +
+      liabilityNode(data.liability3Creditor, data.liability3Type, data.liability3Balance, data.liability3Payment)
   );
 
   // --- LOANS ---
@@ -145,12 +290,11 @@ export function toMISMO(
     wrap(
       "LOAN",
       wrap("LOAN_PURPOSE", t("LoanPurposeType", purposeType(data.loanPurpose))) +
-        (cashOut
-          ? wrap("REFINANCE", t("RefinanceCashOutDeterminationType", "CashOut"))
-          : "") +
+        (cashOut ? wrap("REFINANCE", t("RefinanceCashOutDeterminationType", "CashOut")) : "") +
         wrap(
           "TERMS_OF_LOAN",
           n("BaseLoanAmount", data.loanAmount) +
+            n("LoanAmortizationPeriodCount", data.loanTermMonths) +
             t("MortgageType", mortgageType(data.productType)) +
             n("NoteRatePercent", data.interestRate)
         ),
@@ -158,46 +302,49 @@ export function toMISMO(
     )
   );
 
-  // --- PARTY (borrower) ---
-  const name = splitName(data.borrowerFullName, data.borrowerFirstName);
-
-  const contactPoints = wrap(
+  // --- BORROWER PARTY ---
+  const bName = splitName(data.borrowerFullName);
+  const borrowerContact = wrap(
     "CONTACT_POINTS",
+    phonePoint("Mobile", data.borrowerCellPhone || data.preferredPhone) +
+      phonePoint("Home", data.borrowerHomePhone) +
+      phonePoint("Work", data.borrowerWorkPhone) +
+      emailPoint(data.email)
+  );
+  const borrowerName = nameNode(
+    data.borrowerFirstName || bName.first,
+    data.borrowerMiddleName || bName.middle,
+    data.borrowerLastName || bName.last,
+    data.borrowerFullName,
+    data.borrowerSuffix
+  );
+  const bDob = normalizeDate(data.borrowerDob);
+  const borrowerDetail = wrap(
+    "BORROWER_DETAIL",
+    (bDob ? `<BorrowerBirthDate>${bDob}</BorrowerBirthDate>` : "") +
+      n("DependentCount", data.borrowerDependentsCount) +
+      t("MaritalStatusType", maritalType(data.borrowerMaritalStatus))
+  );
+  const borrowerCitizenship = wrap(
+    "CITIZENSHIP_RESIDENCY_TYPES",
     wrap(
-      "CONTACT_POINT",
-      wrap("CONTACT_POINT_TELEPHONE", n("ContactPointTelephoneValue", data.preferredPhone))
-    ) +
-      wrap(
-        "CONTACT_POINT",
-        wrap("CONTACT_POINT_EMAIL", t("ContactPointEmailValue", data.email))
-      )
+      "CITIZENSHIP_RESIDENCY_TYPE",
+      t("CitizenshipResidencyType", citizenshipType(data.borrowerCitizenship))
+    )
   );
-
-  const nameNode = wrap(
-    "NAME",
-    t("FirstName", name.first) +
-      t("FullName", data.borrowerFullName) +
-      t("LastName", name.last) +
-      t("MiddleName", name.middle)
-  );
-
-  const dob = normalizeDate(data.borrowerDob);
-  const borrowerDetail = wrap("BORROWER_DETAIL", dob ? `<BorrowerBirthDate>${dob}</BorrowerBirthDate>` : "");
-
-  const currentIncome = wrap(
+  const borrowerIncome = wrap(
     "CURRENT_INCOME",
     wrap(
       "CURRENT_INCOME_ITEMS",
-      wrap(
-        "CURRENT_INCOME_ITEM",
-        wrap(
-          "CURRENT_INCOME_ITEM_DETAIL",
-          n("CurrentIncomeMonthlyTotalAmount", data.grossMonthlyIncome) + t("IncomeType", "Base")
-        )
-      )
+      incomeItem("Base", data.grossMonthlyIncome) +
+        incomeItem("Overtime", data.incomeOvertime) +
+        incomeItem("Bonus", data.incomeBonus) +
+        incomeItem("Commissions", data.incomeCommission) +
+        incomeItem("MilitaryBasePay", data.incomeMilitary) +
+        incomeItem("Other", data.incomeOther) +
+        incomeItem("Other", data.otherIncomeAmount)
     )
   );
-
   const selfEmployed = String(data.employmentType ?? "").toLowerCase().includes("self");
   const employers = wrap(
     "EMPLOYERS",
@@ -207,39 +354,196 @@ export function toMISMO(
         "EMPLOYMENT",
         (selfEmployed
           ? "<EmploymentBorrowerSelfEmployedIndicator>true</EmploymentBorrowerSelfEmployedIndicator>"
-          : "") + t("EmploymentStartDate", normalizeDate(data.hireDate))
-      ) + wrap("LEGAL_ENTITY", wrap("LEGAL_ENTITY_DETAIL", t("FullName", data.employer)))
+          : "") +
+          t("EmploymentPositionDescription", data.borrowerPosition) +
+          t("EmploymentStartDate", normalizeDate(data.hireDate)) +
+          n("EmploymentTimeInLineOfWorkYearsCount", data.borrowerYearsInLineOfWork) +
+          n("OwnershipInterestPercent", data.borrowerSelfEmployedShare)
+      ) +
+        wrap(
+          "LEGAL_ENTITY",
+          nameNode("", "", "", data.employer) +
+            wrap(
+              "CONTACT_POINTS",
+              phonePoint("Work", data.employerPhone)
+            )
+        ) +
+        addressNode(data.employerStreet, data.employerCity, data.employerState, data.employerZip)
     )
   );
+  const currentResidence = wrap(
+    "RESIDENCE",
+    addressNode(
+      data.currentStreet,
+      data.currentCity,
+      data.currentState,
+      data.currentZip,
+      "",
+      data.currentCountry
+    ) +
+      wrap(
+        "RESIDENCE_DETAIL",
+        t("BorrowerResidencyBasisType", residencyBasis(data.currentHousingType)) +
+          t("BorrowerResidencyType", "Current") +
+          n("MonthlyHousingExpenseAmount", data.currentHousingPayment)
+      )
+  );
+  const borrowerResidences = wrap("RESIDENCES", currentResidence);
 
-  const borrower = wrap("BORROWER", borrowerDetail + currentIncome + employers);
+  // Declarations (well-established ULAD indicators).
+  const declarationDetail = wrap(
+    "DECLARATION_DETAIL",
+    boolIndicator("BankruptcyIndicator", data.declDeclaredBankruptcy) +
+      boolIndicator("HomeownerPastThreeYearsIndicator", data.declOwnershipInterest) +
+      boolIndicator("IntentToOccupyIndicator", data.declOccupyPrimary) +
+      boolIndicator("OutstandingJudgmentsIndicator", data.declOutstandingJudgments) +
+      boolIndicator("PartyToLawsuitIndicator", data.declPartyToLawsuit) +
+      boolIndicator("PresentlyDelinquentIndicator", data.declDelinquentFederalDebt) +
+      boolIndicator("PriorPropertyDeedInLieuConveyedIndicator", data.declConveyedTitleInLieu) +
+      boolIndicator("PriorPropertyForeclosureCompletedIndicator", data.declPropertyForeclosed) +
+      boolIndicator("PriorPropertyShortSaleCompletedIndicator", data.declPreForeclosureShortSale) +
+      boolIndicator("UndisclosedBorrowedFundsIndicator", data.declBorrowingMoney) +
+      boolIndicator("UndisclosedComakerOfNoteIndicator", data.declCoSigner) +
+      boolIndicator("UndisclosedCreditApplicationIndicator", data.declNewCredit) +
+      boolIndicator("UndisclosedMortgageApplicationIndicator", data.declOtherMortgage)
+  );
+  const declaration = wrap("DECLARATION", declarationDetail);
 
-  const ssn = num(data.borrowerSsn);
-  const taxpayerIds = ssn
+  const borrower = wrap(
+    "BORROWER",
+    borrowerDetail +
+      borrowerCitizenship +
+      borrowerIncome +
+      declaration +
+      employers +
+      borrowerResidences
+  );
+
+  const borrowerSsn = num(data.borrowerSsn);
+  const borrowerTaxIds = borrowerSsn
     ? wrap(
         "TAXPAYER_IDENTIFIERS",
         wrap(
           "TAXPAYER_IDENTIFIER",
           t("TaxpayerIdentifierType", "SocialSecurityNumber") +
-            `<TaxpayerIdentifierValue>${ssn}</TaxpayerIdentifierValue>`
+            `<TaxpayerIdentifierValue>${borrowerSsn}</TaxpayerIdentifierValue>`
         )
       )
     : "";
 
-  const parties = wrap(
-    "PARTIES",
-    wrap(
-      "PARTY",
-      wrap("INDIVIDUAL", contactPoints + nameNode) +
-        wrap(
-          "ROLES",
-          wrap("ROLE", borrower + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))
-        ) +
-        taxpayerIds
-    )
+  const borrowerParty = wrap(
+    "PARTY",
+    wrap("INDIVIDUAL", borrowerContact + borrowerName) +
+      wrap("ROLES", wrap("ROLE", borrower + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))) +
+      borrowerTaxIds
   );
 
-  // --- EXTENSION: Lending Force call capture (no native MISMO home) ---
+  // --- CO-BORROWER PARTY (optional) ---
+  let coBorrowerParty = "";
+  if (xml(data.coBorrowerName)) {
+    const cName = splitName(data.coBorrowerName);
+    const cDob = normalizeDate(data.coBorrowerDob);
+    const cContact = wrap(
+      "CONTACT_POINTS",
+      phonePoint("Mobile", data.coBorrowerPhone) + emailPoint(data.coBorrowerEmail)
+    );
+    const cDetail = wrap(
+      "BORROWER_DETAIL",
+      (cDob ? `<BorrowerBirthDate>${cDob}</BorrowerBirthDate>` : "") +
+        t("MaritalStatusType", maritalType(data.coBorrowerMaritalStatus))
+    );
+    const cSsn = num(data.coBorrowerSsn);
+    const cTaxIds = cSsn
+      ? wrap(
+          "TAXPAYER_IDENTIFIERS",
+          wrap(
+            "TAXPAYER_IDENTIFIER",
+            t("TaxpayerIdentifierType", "SocialSecurityNumber") +
+              `<TaxpayerIdentifierValue>${cSsn}</TaxpayerIdentifierValue>`
+          )
+        )
+      : "";
+    coBorrowerParty = wrap(
+      "PARTY",
+      wrap("INDIVIDUAL", cContact + nameNode(cName.first, cName.middle, cName.last, data.coBorrowerName)) +
+        wrap(
+          "ROLES",
+          wrap("ROLE", wrap("BORROWER", cDetail) + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))
+        ) +
+        cTaxIds
+    );
+  }
+
+  // --- LOAN ORIGINATOR PARTY (optional) ---
+  let loParty = "";
+  if (xml(data.loName) || xml(data.loNmls)) {
+    const loName = splitName(data.loName);
+    const loContact = wrap(
+      "CONTACT_POINTS",
+      phonePoint("Work", data.loPhone) + emailPoint(data.loEmail)
+    );
+    const loIds = wrap(
+      "LICENSES",
+      (data.loNmls
+        ? wrap(
+            "LICENSE",
+            wrap(
+              "LICENSE_DETAIL",
+              t("LicenseAuthorityLevelType", "Federal") +
+                `<LicenseIdentifier>${xml(data.loNmls)}</LicenseIdentifier>`
+            )
+          )
+        : "") +
+        (data.loStateLicense
+          ? wrap(
+              "LICENSE",
+              wrap(
+                "LICENSE_DETAIL",
+                t("LicenseAuthorityLevelType", "State") +
+                  `<LicenseIdentifier>${xml(data.loStateLicense)}</LicenseIdentifier>`
+              )
+            )
+          : "")
+    );
+    loParty = wrap(
+      "PARTY",
+      wrap("INDIVIDUAL", loContact + nameNode(loName.first, loName.middle, loName.last, data.loName)) +
+        loIds +
+        wrap(
+          "ROLES",
+          wrap(
+            "ROLE",
+            wrap(
+              "LOAN_ORIGINATOR",
+              t("LoanOriginatorType", "Individual") + t("NationwideMortgageLicensingSystemAndRegistryIdentifier", data.loNmls)
+            ) + wrap("ROLE_DETAIL", t("PartyRoleType", "LoanOriginator"))
+          )
+        )
+    );
+  }
+
+  // --- ORGANIZATION PARTY (optional) ---
+  let orgParty = "";
+  if (xml(data.loOrganization)) {
+    orgParty = wrap(
+      "PARTY",
+      wrap("LEGAL_ENTITY", wrap("LEGAL_ENTITY_DETAIL", t("FullName", data.loOrganization))) +
+        wrap(
+          "ROLES",
+          wrap(
+            "ROLE",
+            wrap(
+              "LOAN_ORIGINATOR",
+              t("NationwideMortgageLicensingSystemAndRegistryIdentifier", data.loOrgNmls)
+            ) + wrap("ROLE_DETAIL", t("PartyRoleType", "LoanOriginationCompany"))
+          )
+        )
+    );
+  }
+
+  const parties = wrap("PARTIES", borrowerParty + coBorrowerParty + loParty + orgParty);
+
+  // --- EXTENSION: everything without a clean MISMO home ---
   const extension = wrap(
     "EXTENSION",
     wrap(
@@ -256,15 +560,31 @@ export function toMISMO(
         n("EstimatedCreditScore", data.estimatedCreditScore) +
         t("CreditEvents", data.creditEvents) +
         t("ProductType", data.productType) +
+        n("PurchasePrice", data.purchasePrice) +
+        n("DownPayment", data.downPayment) +
         n("ProposedNewPayment", data.newPayment) +
+        t("PropertyType", data.propertyType) +
+        t("MixedUse", data.mixedUse) +
         t("FinancialBenefit", data.financialBenefit) +
         t("EmotionalBenefit", data.emotionalBenefit) +
+        // Real estate owned
+        t("REOAddress", data.reoAddress) +
+        n("REOValue", data.reoValue) +
+        t("REOStatus", data.reoStatus) +
+        n("REOMortgageBalance", data.reoMortgageBalance) +
+        n("REOMonthlyPayment", data.reoMonthlyPayment) +
+        n("REORentalIncome", data.reoRentalIncome) +
+        // Declarations (raw Y/N, lossless mirror of the structured indicators)
+        t("DeclFamilyRelationship", data.declFamilyRelationship) +
+        t("DeclSubjectToLien", data.declSubjectToLien) +
+        t("DeclBankruptcyType", data.declBankruptcyType) +
+        t("DeclarationNotes", data.declarationNotes) +
         t("Notes", data.runningNotes) +
         `</LENDING_FORCE_CALL_CAPTURE>`
     )
   );
 
-  const deal = `<DEAL>${assets}${collaterals}${loans}${parties}${extension}</DEAL>`;
+  const deal = `<DEAL>${assets}${collaterals}${liabilities}${loans}${parties}${extension}</DEAL>`;
 
   return (
     `<?xml version="1.0" encoding="UTF-8"?>` +

@@ -13,7 +13,8 @@ export type SectionId =
   | "assets"
   | "presentation"
   | "propertyConditions"
-  | "declarations";
+  | "declarations"
+  | "application";
 
 export type FieldType = "input" | "textarea" | "select";
 

@@ -480,5 +480,230 @@ export const flow: Flow = {
       fields: [["declarationNotes", "Declaration Notes", "textarea"]],
       routes: [["Continue to export", "export"]]
     }
+  ],
+  application: [
+    {
+      title: "1003 \u2014 Borrower Information",
+      script:
+        "Let\u2019s complete the full application (Form 1003). Anything already captured earlier on the call will carry over here. Start with the borrower\u2019s personal details.",
+      coach:
+        "This is the Uniform Residential Loan Application (URLA/1003). Fields reuse the data collected during the call so you are not re-entering it.",
+      fields: [
+        ["borrowerFirstName", "First Name"],
+        ["borrowerMiddleName", "Middle Name"],
+        ["borrowerLastName", "Last Name"],
+        ["borrowerSuffix", "Suffix"],
+        ["borrowerFullName", "Full Name (as on file)"],
+        ["borrowerSsn", "Social Security Number"],
+        ["borrowerDob", "Date of Birth"],
+        ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
+        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Separated|Unmarried"],
+        ["borrowerDependentsCount", "Number of Dependents"],
+        ["borrowerDependentsAges", "Dependents' Ages"],
+        ["borrowerCellPhone", "Cell Phone"],
+        ["borrowerHomePhone", "Home Phone"],
+        ["borrowerWorkPhone", "Work Phone"],
+        ["email", "Email"]
+      ],
+      routes: [["Continue", "jump:1"]]
+    },
+    {
+      title: "1003 \u2014 Current Address & Housing",
+      script:
+        "Where does the borrower currently live, how long have they been there, and do they own or rent?",
+      fields: [
+        ["currentStreet", "Street Address"],
+        ["currentUnit", "Unit #"],
+        ["currentCity", "City"],
+        ["currentState", "State"],
+        ["currentZip", "ZIP"],
+        ["currentCountry", "Country"],
+        ["currentYears", "Years at Address"],
+        ["currentMonths", "Months at Address"],
+        ["currentHousingType", "Housing", "select", "Own|Rent|No primary housing expense"],
+        ["currentHousingPayment", "Monthly Housing Payment"],
+        ["mailingAddress", "Mailing Address (if different)", "textarea"]
+      ],
+      routes: [["Continue", "jump:2"]]
+    },
+    {
+      title: "1003 \u2014 Co-Borrower (if any)",
+      script:
+        "Is there a co-borrower on this loan? If so, capture their details. If not, skip to the next step.",
+      fields: [
+        ["coBorrowerName", "Co-Borrower Full Name"],
+        ["coBorrowerSsn", "Co-Borrower SSN"],
+        ["coBorrowerDob", "Co-Borrower Date of Birth"],
+        ["coBorrowerEmail", "Co-Borrower Email"],
+        ["coBorrowerPhone", "Co-Borrower Phone"],
+        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Separated|Unmarried"]
+      ],
+      routes: [
+        ["Continue", "jump:3"],
+        ["No co-borrower", "jump:3"]
+      ]
+    },
+    {
+      title: "1003 \u2014 Employment & Income",
+      script:
+        "Capture current employment and how the borrower is paid. Break out the monthly income by type.",
+      fields: [
+        ["employer", "Employer / Business Name"],
+        ["borrowerPosition", "Position / Title"],
+        ["employmentType", "Employment Type", "select", "Salary|Hourly|Commission|Self-Employed|Retired|Other"],
+        ["employerPhone", "Employer Phone"],
+        ["employerStreet", "Employer Street"],
+        ["employerCity", "Employer City"],
+        ["employerState", "Employer State"],
+        ["employerZip", "Employer ZIP"],
+        ["hireDate", "Start Date"],
+        ["borrowerYearsInLineOfWork", "Years in This Line of Work"],
+        ["borrowerSelfEmployedShare", "Ownership Share (if self-employed) %"],
+        ["grossMonthlyIncome", "Base Monthly Income"],
+        ["incomeOvertime", "Overtime (monthly)"],
+        ["incomeBonus", "Bonus (monthly)"],
+        ["incomeCommission", "Commission (monthly)"],
+        ["incomeMilitary", "Military Pay (monthly)"],
+        ["incomeOther", "Other Employment Income (monthly)"],
+        ["netMonthlyIncome", "Net / Take-Home Monthly"]
+      ],
+      routes: [["Continue", "jump:4"]]
+    },
+    {
+      title: "1003 \u2014 Additional & Previous Income",
+      script:
+        "Any other income sources (Social Security, pension, rental, child support, etc.) and prior employment if less than two years at the current job.",
+      fields: [
+        ["otherIncomeSource", "Other Income Source"],
+        ["otherIncomeAmount", "Other Income (monthly)"],
+        ["previousEmployer", "Previous Employer"],
+        ["previousPosition", "Previous Position"],
+        ["previousEmploymentDates", "Previous Employment Dates"],
+        ["previousMonthlyIncome", "Previous Monthly Income"]
+      ],
+      routes: [["Continue", "jump:5"]]
+    },
+    {
+      title: "1003 \u2014 Assets",
+      script:
+        "List the borrower\u2019s accounts and reserves. Include the institution and account number where possible.",
+      fields: [
+        ["checkingBank", "Checking Institution"],
+        ["checkingAccountNumber", "Checking Account #"],
+        ["checkingSavings", "Checking Balance"],
+        ["savingsBank", "Savings Institution"],
+        ["savingsAccountNumber", "Savings Account #"],
+        ["savingsBalance", "Savings Balance"],
+        ["retirementInstitution", "Retirement Institution"],
+        ["retirementAssets", "Retirement Balance"],
+        ["otherAssetsDescription", "Other Assets (description)", "textarea"],
+        ["otherAssetsValue", "Other Assets Value"],
+        ["totalAssets", "Total Assets / Reserves"]
+      ],
+      routes: [["Continue", "jump:6"]]
+    },
+    {
+      title: "1003 \u2014 Liabilities",
+      script:
+        "List the borrower\u2019s debts: creditor, type, balance, and monthly payment. Use the summary box for anything beyond the three slots.",
+      fields: [
+        ["liability1Creditor", "Liability 1 \u2014 Creditor"],
+        ["liability1Type", "Liability 1 \u2014 Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability1Balance", "Liability 1 \u2014 Balance"],
+        ["liability1Payment", "Liability 1 \u2014 Monthly Payment"],
+        ["liability2Creditor", "Liability 2 \u2014 Creditor"],
+        ["liability2Type", "Liability 2 \u2014 Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability2Balance", "Liability 2 \u2014 Balance"],
+        ["liability2Payment", "Liability 2 \u2014 Monthly Payment"],
+        ["liability3Creditor", "Liability 3 \u2014 Creditor"],
+        ["liability3Type", "Liability 3 \u2014 Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability3Balance", "Liability 3 \u2014 Balance"],
+        ["liability3Payment", "Liability 3 \u2014 Monthly Payment"],
+        ["liabilitySummary", "Additional Liabilities", "textarea"],
+        ["totalDebtToPayoff", "Total Debt to Pay Off"],
+        ["totalPaymentsToPayoff", "Total Monthly Payments"]
+      ],
+      routes: [["Continue", "jump:7"]]
+    },
+    {
+      title: "1003 \u2014 Real Estate Owned",
+      script:
+        "Does the borrower own other real estate? Capture the property, value, status, and any rental income.",
+      fields: [
+        ["reoAddress", "REO Property Address", "textarea"],
+        ["reoValue", "REO Market Value"],
+        ["reoStatus", "REO Status", "select", "Retained|Sold|Pending Sale"],
+        ["reoMortgageBalance", "REO Mortgage Balance"],
+        ["reoMonthlyPayment", "REO Monthly Payment"],
+        ["reoRentalIncome", "REO Gross Rental Income (monthly)"]
+      ],
+      routes: [["Continue", "jump:8"]]
+    },
+    {
+      title: "1003 \u2014 Loan & Property",
+      script:
+        "Confirm the loan terms and the subject property details.",
+      fields: [
+        ["loanPurpose", "Loan Purpose", "select", "Purchase|Refinance|Cash-Out Refinance|HELOC"],
+        ["loanAmount", "Loan Amount"],
+        ["interestRate", "Interest Rate"],
+        ["loanTermMonths", "Loan Term (months)"],
+        ["productType", "Product Type"],
+        ["occupancy", "Occupancy", "select", "Primary Residence|Second Home|Investment Property"],
+        ["propertyAddress", "Property Street"],
+        ["propertyCity", "Property City"],
+        ["propertyState", "Property State"],
+        ["propertyZip", "Property ZIP"],
+        ["propertyCounty", "Property County"],
+        ["propertyUnits", "Number of Units"],
+        ["propertyType", "Property Type", "select", "Single Family|Condominium|Townhouse|2-4 Units|Manufactured"],
+        ["propertyYearBuilt", "Year Built"],
+        ["estimatedValue", "Estimated / Appraised Value"],
+        ["purchasePrice", "Purchase Price (if purchase)"],
+        ["downPayment", "Down Payment"],
+        ["newPayment", "Proposed Monthly Payment"],
+        ["mixedUse", "Mixed-Use Property?", "select", "No|Yes"]
+      ],
+      routes: [["Continue", "jump:9"]]
+    },
+    {
+      title: "1003 \u2014 Declarations",
+      script:
+        "Standard URLA declarations. Mark each Yes or No. Document details in the declaration notes on the earlier step if a Yes needs explanation.",
+      fields: [
+        ["declOccupyPrimary", "Will occupy as primary residence?", "select", "Yes|No"],
+        ["declOwnershipInterest", "Ownership interest in property in last 3 years?", "select", "No|Yes"],
+        ["declFamilyRelationship", "Family/business relationship with seller?", "select", "No|Yes"],
+        ["declBorrowingMoney", "Borrowing undisclosed money for this loan?", "select", "No|Yes"],
+        ["declOtherMortgage", "Applying for a mortgage on another property?", "select", "No|Yes"],
+        ["declNewCredit", "Applying for new credit before closing?", "select", "No|Yes"],
+        ["declSubjectToLien", "Property subject to a clean-energy (PACE) lien?", "select", "No|Yes"],
+        ["declCoSigner", "Co-signer/guarantor on undisclosed debt?", "select", "No|Yes"],
+        ["declOutstandingJudgments", "Any outstanding judgments?", "select", "No|Yes"],
+        ["declDelinquentFederalDebt", "Delinquent/default on federal debt?", "select", "No|Yes"],
+        ["declPartyToLawsuit", "Party to a lawsuit?", "select", "No|Yes"],
+        ["declConveyedTitleInLieu", "Conveyed title in lieu of foreclosure (7 yrs)?", "select", "No|Yes"],
+        ["declPreForeclosureShortSale", "Pre-foreclosure/short sale (7 yrs)?", "select", "No|Yes"],
+        ["declPropertyForeclosed", "Property foreclosed (7 yrs)?", "select", "No|Yes"],
+        ["declDeclaredBankruptcy", "Declared bankruptcy (7 yrs)?", "select", "No|Yes"],
+        ["declBankruptcyType", "Bankruptcy Type (if yes)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"]
+      ],
+      routes: [["Continue", "jump:10"]]
+    },
+    {
+      title: "1003 \u2014 Loan Originator",
+      script:
+        "Finally, confirm the loan originator information for the file.",
+      fields: [
+        ["loName", "Loan Originator Name"],
+        ["loNmls", "LO NMLS ID"],
+        ["loOrganization", "Organization Name"],
+        ["loOrgNmls", "Organization NMLS ID"],
+        ["loPhone", "LO Phone"],
+        ["loEmail", "LO Email"],
+        ["loStateLicense", "LO State License #"]
+      ],
+      routes: [["Save & go to export", "export"]]
+    }
   ]
 };
