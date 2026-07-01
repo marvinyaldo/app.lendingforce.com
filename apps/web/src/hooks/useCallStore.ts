@@ -155,6 +155,32 @@ export function useCallStore(): UseCallStore {
         setData((d) => ({ ...d, ...updates }));
       }
 
+      // Conditional routing: when:key=value?actionIfTrue|actionIfFalse
+      if (finalAction.startsWith("when:")) {
+        const body = finalAction.slice("when:".length);
+        const qm = body.indexOf("?");
+        if (qm >= 0) {
+          const cond = body.slice(0, qm);
+          const [ifTrue = "", ifFalse = ""] = body.slice(qm + 1).split("|");
+          const eq = cond.indexOf("=");
+          const k = cond.slice(0, eq);
+          const v = cond.slice(eq + 1);
+          // Evaluate against current data plus any set: updates from this route.
+          const merged = { ...data, ...updates };
+          finalAction = merged[k] === v ? ifTrue : ifFalse;
+        }
+      }
+
+      // Jump to a specific section AND index: at:<section>:<index>
+      if (finalAction.startsWith("at:")) {
+        const rest = finalAction.slice("at:".length);
+        const ci = rest.lastIndexOf(":");
+        const sec = rest.slice(0, ci) as SectionId;
+        const idx = Number(rest.slice(ci + 1));
+        setState({ section: sec, index: idx, route: label });
+        return;
+      }
+
       if (finalAction.startsWith("rebuttal:")) {
         setState((s) => ({ ...s, route: label }));
         const key = finalAction.slice("rebuttal:".length) as RebuttalKey;
@@ -185,7 +211,7 @@ export function useCallStore(): UseCallStore {
         setState({ section: finalAction as SectionId, index: 0, route: label });
       }
     },
-    [loadRebuttal, openDrawer]
+    [data, loadRebuttal, openDrawer]
   );
 
   const save = useCallback(() => {

@@ -37,6 +37,8 @@ export type FieldDef =
  *   "drawer"                   - open the rebuttal drawer
  *   "export"                   - show export screen
  *   "set:key=value;<action>"   - assign data field(s) then run action
+ *   "at:<sectionId>:<index>"   - navigate to a specific step within a section
+ *   "when:key=value?A|B"       - run action A if data[key]===value, else action B
  */
 export type RouteDef = [label: string, action: string];
 

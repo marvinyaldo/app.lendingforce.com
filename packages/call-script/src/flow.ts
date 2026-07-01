@@ -91,9 +91,9 @@ export const flow: Flow = {
         ["debtPain", "Debt Pain Point", "textarea"]
       ],
       routes: [
-        ["Payment pressure", "set:debtDriver=Payment pressure;next:liabilities"],
-        ["High interest", "set:debtDriver=High interest;next:liabilities"],
-        ["Simplify budget", "set:debtDriver=Simplify budget;next:liabilities"]
+        ["Payment pressure", "set:debtDriver=Payment pressure;jump:7"],
+        ["High interest", "set:debtDriver=High interest;jump:7"],
+        ["Simplify budget", "set:debtDriver=Simplify budget;jump:7"]
       ]
     },
     {
@@ -127,7 +127,7 @@ export const flow: Flow = {
       routes: [
         ["Under contract", "set:purchaseStage=Under contract;next:property"],
         ["Shopping", "set:purchaseStage=Shopping;next:property"],
-        ["Pre-approval", "set:purchaseStage=Pre-approval;next:income"]
+        ["Pre-approval", "set:purchaseStage=Pre-approval;next:property"]
       ]
     },
     {
@@ -213,37 +213,56 @@ export const flow: Flow = {
     {
       title: "Credit setup",
       script:
-        "Our process is designed with you in mind. Your credit profile matters, and I want to make sure we are reviewing the full picture.\n\n" +
-        "Before we do anything, do you have any bankruptcies, foreclosures, short sales, late payments, or major credit events I should know about?",
+        "Our process is designed with you in mind \u2014 your credit score is just as important to us as it is to you. We\u2019re going to pull a soft copy of your credit report, which means there\u2019s no impact at all on your score.\n\n" +
+        "Go ahead with your date of birth and Social when you\u2019re ready.",
       coach:
         "Follow company-approved credit authorization and privacy process. Do not store full SSNs in this local prototype.",
       fields: [
+        ["borrowerDob", "DOB"],
+        ["borrowerSsn", "SSN"],
         ["estimatedCreditScore", "Estimated Credit Score"],
         ["creditEvents", "Credit Events", "textarea"]
       ],
       routes: [
-        ["No issues", "jump:1"],
-        ["Has credit event", "jump:2"],
-        ["Concerned about credit pull", "rebuttal:creditPull"]
+        ["Client provided info", "set:creditPulled=yes;next:liabilities"],
+        ["Client objected", "jump:1"]
       ]
     },
     {
-      title: "Soft credit transition",
+      title: "Client objected \u2014 first rebuttal",
       script:
-        "Perfect. The reason we review this is not just the score. It lets us understand monthly obligations, balances, and whether a solution actually improves the overall picture.\n\n" +
-        "Let\u2019s walk through the accounts together so I can see what helps and what does not.",
+        "I get that. It\u2019s just a soft credit pull, so it doesn\u2019t even show up as an inquiry or affect your score in any way. It just lets us see your credit mix and match you to the right program \u2014 we can\u2019t see any private info or accounts.\n\n" +
+        "Go ahead with your date of birth and Social when you\u2019re ready.",
       fields: [
         ["borrowerDob", "DOB"],
-        ["creditNotes", "Credit Notes", "textarea"]
+        ["borrowerSsn", "SSN"]
       ],
-      routes: [["Move to liabilities", "liabilities"]]
+      routes: [
+        ["Client provided info", "set:creditPulled=yes;next:liabilities"],
+        ["Client objected again", "set:creditDeferred=yes;jump:2"]
+      ]
     },
     {
-      title: "Credit event dig",
+      title: "Client objected again \u2014 defer credit",
       script:
-        "Thank you for telling me. What happened, when did it happen, and has everything been resolved or brought current since then?",
-      fields: [["creditEventExplanation", "Credit Event Explanation", "textarea"]],
-      routes: [["Move to liabilities", "liabilities"]]
+        "No problem at all \u2014 let\u2019s just run through your income and assets first and then we\u2019ll circle back to credit in a minute. Sometimes it makes more sense once you see what range you\u2019re in.",
+      coach:
+        "The system will bring you back here to pull credit automatically once income is captured.",
+      routes: [["Move to income", "next:income"]]
+    },
+    {
+      title: "Circle back \u2014 pull credit now",
+      script:
+        "Now that we\u2019ve got your income and goals in place, let\u2019s go ahead and pull that soft copy. That way we can actually match you to the right programs instead of just guessing. It\u2019s still that soft credit check only, no impact whatsoever.\n\n" +
+        "Go ahead with your date of birth and Social when you\u2019re ready.",
+      fields: [
+        ["borrowerDob", "DOB"],
+        ["borrowerSsn", "SSN"]
+      ],
+      routes: [
+        ["Client provided info", "set:creditPulled=yes;next:liabilities"],
+        ["Still hesitant", "rebuttal:creditPull"]
+      ]
     }
   ],
   liabilities: [
@@ -260,7 +279,7 @@ export const flow: Flow = {
       ],
       routes: [
         ["Add outside expenses", "jump:1"],
-        ["No debt to consolidate", "income"]
+        ["No debt to consolidate", "when:creditDeferred=yes?assets|income"]
       ]
     },
     {
@@ -269,7 +288,7 @@ export const flow: Flow = {
         "Outside of what shows on credit, what else do you have monthly?\n\n" +
         "Things like auto insurance, utilities, school, sports, groceries, gas, subscriptions, family support, or anything else that affects the monthly budget.",
       fields: [["outsideExpenses", "Outside Monthly Expenses", "textarea"]],
-      routes: [["Continue to income", "income"]]
+      routes: [["Continue", "when:creditDeferred=yes?assets|income"]]
     }
   ],
   income: [
@@ -342,7 +361,7 @@ export const flow: Flow = {
         ["monthlyExpenseTotal", "Monthly Expense Total"],
         ["monthlySavings", "Amount Put Away Monthly"]
       ],
-      routes: [["Continue to assets", "assets"]]
+      routes: [["Continue", "when:creditDeferred=yes?at:credit:3|assets"]]
     }
   ],
   assets: [
