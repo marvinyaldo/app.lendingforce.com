@@ -579,6 +579,8 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
         t("DeclSubjectToLien", data.declSubjectToLien) +
         t("DeclBankruptcyType", data.declBankruptcyType) +
         t("DeclarationNotes", data.declarationNotes) +
+        t("PrepTime", data.prepTime) +
+        t("CallbackTime", data.callbackTime) +
         t("Notes", data.runningNotes) +
         `</LENDING_FORCE_CALL_CAPTURE>`
     )

@@ -17,6 +17,7 @@ const sections: { id: SectionId; label: string }[] = [
   { id: "liabilities", label: "Liabilities" },
   { id: "income", label: "Income" },
   { id: "assets", label: "Assets" },
+  { id: "foreshadow", label: "Close / Foreshadow" },
   { id: "presentation", label: "Presentation" },
   { id: "propertyConditions", label: "Property Conditions" },
   { id: "declarations", label: "Declarations" },

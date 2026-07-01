@@ -388,7 +388,41 @@ export const flow: Flow = {
         "Do you have a nest egg set aside in the event of an emergency?\n\n" +
         "My goal is to make sure the option we recommend does not leave you uncomfortable after closing.",
       fields: [["assetNotes", "Asset Notes", "textarea"]],
-      routes: [["Move to presentation", "presentation"]]
+      routes: [["Wrap up & foreshadow", "foreshadow"]]
+    }
+  ],
+  foreshadow: [
+    {
+      title: "Foreshadow & trial close",
+      script:
+        "Thank you for speaking with me today. What I’m going to do next is put together some options for us to go over together.\n\n" +
+        "To recap, your goals are {{financialGoal}} and {{emotionalGoal}} — correct?\n\n" +
+        "If we can get those accomplished today, do you see any reason why you wouldn’t move forward?",
+      coach:
+        "This is the foreshadow / trial close at the end of the discovery call. Confirm the two goals in the client’s own words, then get the commitment before you go build options.",
+      fields: [
+        ["financialGoal", "Goal 1 (financial)", "textarea"],
+        ["emotionalGoal", "Goal 2 (personal)", "textarea"]
+      ],
+      routes: [
+        ["No reason — move forward", "jump:1"],
+        ["They have a concern", "drawer"]
+      ]
+    },
+    {
+      title: "Set the callback",
+      script:
+        "Perfect. Give me {{prepTime}} and I’ll give you a call back at {{callbackTime}}.",
+      coach:
+        "Lock a specific time. This becomes the presentation appointment.",
+      fields: [
+        ["prepTime", "Prep Time Needed"],
+        ["callbackTime", "Callback Time"]
+      ],
+      routes: [
+        ["Present options now", "presentation"],
+        ["End call — present on callback", "export"]
+      ]
     }
   ],
   presentation: [

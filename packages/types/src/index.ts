@@ -11,6 +11,7 @@ export type SectionId =
   | "liabilities"
   | "income"
   | "assets"
+  | "foreshadow"
   | "presentation"
   | "propertyConditions"
   | "declarations"

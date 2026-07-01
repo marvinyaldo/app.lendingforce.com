@@ -29,6 +29,7 @@ export const sectionOrder: SectionId[] = [
   "liabilities",
   "income",
   "assets",
+  "foreshadow",
   "presentation",
   "propertyConditions",
   "declarations",
