@@ -444,13 +444,14 @@ export const flow: Flow = {
       title: "Hard close / next docs",
       script:
         "Perfect. For the appraisal, you can use a debit or credit card. Which would you prefer?\n\n" +
-        "In the meantime, I\u2019ll need your mortgage statement, homeowner\u2019s insurance, and income documents. Please work on those while I finalize the option.",
+        "In the meantime, I\u2019ll need your mortgage statement, homeowner\u2019s insurance, and income documents. Please work on those while I finalize the option.\n\n" +
+        "While we\u2019re on the phone, let\u2019s go ahead and complete your application so we can get this moving.",
       fields: [
         ["paymentMethod", "Appraisal Payment Method"],
         ["docsNeeded", "Documents Needed", "textarea"],
         ["followUpTime", "Follow-Up Time"]
       ],
-      routes: [["Move to export", "export"]]
+      routes: [["Complete the 1003 application", "application"]]
     }
   ],
   propertyConditions: [
@@ -486,9 +487,10 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Borrower Information",
       script:
-        "Let\u2019s complete the full application (Form 1003). Anything already captured earlier on the call will carry over here. Start with the borrower\u2019s personal details.",
+        "Perfect \u2014 since this makes sense for you, let\u2019s go ahead and get your application started so we can lock everything in. The good news is we already covered most of this on our call, so I\u2019ll just confirm the details as we go.\n\n" +
+        "First, let me make sure I have your legal name exactly as it appears on your ID, along with your date of birth and Social.",
       coach:
-        "This is the Uniform Residential Loan Application (URLA/1003). Fields reuse the data collected during the call so you are not re-entering it.",
+        "This is the Uniform Residential Loan Application (URLA/1003), baked right into the call. Fields reuse the data collected earlier so you are confirming, not re-entering. Read it like a natural continuation of the close.",
       fields: [
         ["borrowerFirstName", "First Name"],
         ["borrowerMiddleName", "Middle Name"],
@@ -511,7 +513,8 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Current Address & Housing",
       script:
-        "Where does the borrower currently live, how long have they been there, and do they own or rent?",
+        "Now, what\u2019s your current home address, and how long have you been there?\n\n" +
+        "And is that a place you own or rent, and what\u2019s the monthly payment?",
       fields: [
         ["currentStreet", "Street Address"],
         ["currentUnit", "Unit #"],
