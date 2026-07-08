@@ -557,63 +557,33 @@ hr {
   color: #fff;
 }
 
-.training-drawer {
-  position: fixed;
-  right: min(-1160px, -98vw);
-  top: 0;
-  height: 100vh;
-  width: min(1120px, 96vw);
-  background: #0d1017;
-  z-index: 70;
-  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.34);
-  transition: right 0.24s ease;
+.tq-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: #fff;
+}
+.tq-title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--brand-charcoal);
+}
+.tq-why {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.tq-list {
+  margin: 0;
+  padding-left: 18px;
   display: flex;
   flex-direction: column;
-}
-.training-drawer.open {
-  right: 0;
-}
-.training-drawer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid var(--line);
-}
-.training-tabs {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.training-actions {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
-.training-popout {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--brand-charcoal);
-  text-decoration: none;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-}
-.training-popout:hover {
-  border-color: var(--brand-red);
-}
-.training-frame-wrap {
-  flex: 1;
-  overflow: hidden;
-  background: #0d1017;
-}
-.training-frame {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
+.tq-list li {
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--ink);
 }

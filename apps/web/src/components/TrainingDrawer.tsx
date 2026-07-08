@@ -1,3 +1,7 @@
+import { trainingDecks, decks } from "./trainingQuestions.js";
+
+export { decks };
+
 interface TrainingDrawerProps {
   open: boolean;
   activeDeck: string | null;
@@ -5,31 +9,28 @@ interface TrainingDrawerProps {
   onClose: () => void;
 }
 
-/** The "Digging Deep" training decks, served as static files from /public. */
-export const decks: { key: string; label: string; src: string }[] = [
-  {
-    key: "goals",
-    label: "Goals & Income",
-    src: "/training/digging-deep-goals-income.html"
-  },
-  {
-    key: "assets",
-    label: "Assets & Property",
-    src: "/training/digging-deep-assets-property.html"
-  }
-];
-
 export function TrainingDrawer({ open, activeDeck, onSelect, onClose }: TrainingDrawerProps) {
-  const active = decks.find((d) => d.key === activeDeck) ?? decks[0]!;
+  const active = trainingDecks.find((d) => d.key === activeDeck) ?? trainingDecks[0]!;
   return (
     <>
       {open && <div className="drawer-overlay" onClick={onClose} />}
-      <div className={`training-drawer${open ? " open" : ""}`}>
-        <div className="training-drawer-header">
-          <div className="training-tabs">
-            <span className="section-title" style={{ margin: 0 }}>
-              Digging Deep · Training
-            </span>
+      <div className={`drawer${open ? " open" : ""}`}>
+        <div className="drawer-header">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              gap: 10,
+              alignItems: "center"
+            }}
+          >
+            <h2>Digging Deep</h2>
+            <button type="button" onClick={onClose}>
+              Close
+            </button>
+          </div>
+          <p className="muted small">Discovery questions to ask, by scenario.</p>
+          <div className="rebuttal-grid">
             {decks.map((d) => (
               <button
                 key={d.key}
@@ -41,24 +42,24 @@ export function TrainingDrawer({ open, activeDeck, onSelect, onClose }: Training
               </button>
             ))}
           </div>
-          <div className="training-actions">
-            <a className="training-popout" href={active.src} target="_blank" rel="noreferrer">
-              Open full screen ↗
-            </a>
-            <button type="button" onClick={onClose}>
-              Close
-            </button>
-          </div>
         </div>
-        <div className="training-frame-wrap">
-          {open && (
-            <iframe
-              key={active.key}
-              className="training-frame"
-              src={active.src}
-              title={`Digging Deep — ${active.label}`}
-            />
-          )}
+        <div className="drawer-body">
+          {active.areas.map((area) => (
+            <div key={area.area}>
+              <p className="section-title">{area.area} Discovery</p>
+              {area.scenarios.map((sc) => (
+                <div key={sc.title} className="tq-card">
+                  <h3 className="tq-title">{sc.title}</h3>
+                  <p className="tq-why">{sc.why}</p>
+                  <ol className="tq-list">
+                    {sc.questions.map((q, i) => (
+                      <li key={i}>{q}</li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
     </>
