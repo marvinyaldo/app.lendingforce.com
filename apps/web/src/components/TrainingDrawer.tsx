@@ -1,11 +1,17 @@
 import { trainingAreas } from "./trainingQuestions.js";
 
+/** Area names for launcher buttons, in order. */
+export const areaNames = trainingAreas.map((a) => a.area);
+
 interface TrainingDrawerProps {
   open: boolean;
+  activeArea: string | null;
+  onSelect: (area: string) => void;
   onClose: () => void;
 }
 
-export function TrainingDrawer({ open, onClose }: TrainingDrawerProps) {
+export function TrainingDrawer({ open, activeArea, onSelect, onClose }: TrainingDrawerProps) {
+  const active = trainingAreas.find((a) => a.area === activeArea) ?? trainingAreas[0]!;
   return (
     <>
       {open && <div className="drawer-overlay" onClick={onClose} />}
@@ -24,25 +30,31 @@ export function TrainingDrawer({ open, onClose }: TrainingDrawerProps) {
               Close
             </button>
           </div>
-          <p className="muted small">
-            Discovery questions by area — Goals, Income, Property, Assets, Credit.
-          </p>
+          <p className="muted small">Discovery questions by area.</p>
+          <div className="rebuttal-grid">
+            {trainingAreas.map((a) => (
+              <button
+                key={a.area}
+                type="button"
+                className={a.area === active.area ? "primary" : ""}
+                onClick={() => onSelect(a.area)}
+              >
+                {a.area}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="drawer-body">
-          {trainingAreas.map((area) => (
-            <div key={area.area}>
-              <p className="section-title">{area.area}</p>
-              {area.scenarios.map((sc) => (
-                <div key={sc.title} className="tq-card">
-                  <h3 className="tq-title">{sc.title}</h3>
-                  <p className="tq-why">{sc.why}</p>
-                  <ol className="tq-list">
-                    {sc.questions.map((q, i) => (
-                      <li key={i}>{q}</li>
-                    ))}
-                  </ol>
-                </div>
-              ))}
+          <p className="section-title">{active.area} Discovery</p>
+          {active.scenarios.map((sc) => (
+            <div key={sc.title} className="tq-card">
+              <h3 className="tq-title">{sc.title}</h3>
+              <p className="tq-why">{sc.why}</p>
+              <ol className="tq-list">
+                {sc.questions.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ol>
             </div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import type { SectionId } from "@lf/types";
+import { areaNames } from "./TrainingDrawer.js";
 
 interface SidebarProps {
   activeSection: SectionId;
@@ -6,7 +7,7 @@ interface SidebarProps {
   onStartSection: (s: SectionId) => void;
   onShowExport: () => void;
   onRouteGoal: (goal: string) => void;
-  onOpenTraining: () => void;
+  onOpenTraining: (area: string) => void;
 }
 
 const sections: { id: SectionId; label: string }[] = [
@@ -57,9 +58,16 @@ export function Sidebar({
       </button>
       <hr />
       <p className="section-title">Digging Deep · Training</p>
-      <button type="button" className="navbtn" onClick={onOpenTraining}>
-        Digging Deep
-      </button>
+      {areaNames.map((area) => (
+        <button
+          key={area}
+          type="button"
+          className="navbtn"
+          onClick={() => onOpenTraining(area)}
+        >
+          {area}
+        </button>
+      ))}
       <hr />
       <p className="section-title">Quick Route</p>
       <div className="jump">
