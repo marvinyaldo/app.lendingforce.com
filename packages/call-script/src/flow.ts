@@ -11,11 +11,14 @@ export const flow: Flow = {
       fields: [
         ["loName", "LO Name"],
         ["borrowerFirstName", "Borrower First Name"],
+        ["borrowerMiddleName", "Middle Name"],
+        ["borrowerLastName", "Borrower Last Name"],
+        ["borrowerSuffix", "Suffix"],
         ["borrowerFullName", "Borrower Full Name"],
         ["preferredPhone", "Preferred Phone"]
       ],
       routes: [
-        ["Client agrees", "brand"],
+        ["Client agrees", "jump:1"],
         ["Not interested", "rebuttal:notInterested"],
         ["Busy", "rebuttal:busy"],
         ["Send info", "rebuttal:sendInfo"],
@@ -27,10 +30,47 @@ export const flow: Flow = {
       title: "Confirm contact information",
       script:
         "Perfect. Before I go too far, let me make sure I have the best contact information for you.\n\n" +
-        "Is this the best phone number to reach you? And do you prefer calls, texts, or email?",
+        "What is the best number to reach you, your email, and the address where you currently live?",
+      coach:
+        "This is where the 1003 borrower + address block gets captured up front. Confirm the current home address and how long they have been there.",
       fields: [
+        ["borrowerCellPhone", "Cell Phone"],
+        ["borrowerHomePhone", "Home Phone"],
+        ["borrowerWorkPhone", "Work Phone"],
         ["email", "Email"],
-        ["preferredContact", "Preferred Contact Method", "select", "Phone|Text|Email"]
+        ["preferredContact", "Preferred Contact Method", "select", "Phone|Text|Email"],
+        ["currentStreet", "Current Street Address"],
+        ["currentUnit", "Unit #"],
+        ["currentCity", "City"],
+        ["currentState", "State"],
+        ["currentZip", "ZIP"],
+        ["currentCountry", "Country"],
+        ["currentYears", "Years at Address"],
+        ["currentMonths", "Months at Address"],
+        ["currentHousingType", "Own or Rent", "select", "Own|Rent|No primary housing expense"],
+        ["currentHousingPayment", "Monthly Housing Payment"],
+        ["mailingAddress", "Mailing Address (if different)", "textarea"]
+      ],
+      routes: [["Continue", "jump:2"]]
+    },
+    {
+      title: "Household & co-borrower",
+      script:
+        "A couple of quick questions for the application. What is your marital status, and how many dependents do you have?\n\n" +
+        "And will anyone be on the loan with you — a spouse or co-borrower?",
+      coach:
+        "Captures the 1003 household + citizenship info and flags a co-borrower early so you can gather their details as you go.",
+      fields: [
+        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Separated|Unmarried"],
+        ["borrowerDependentsCount", "Number of Dependents"],
+        ["borrowerDependentsAges", "Dependents' Ages"],
+        ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
+        ["coBorrowerName", "Co-Borrower Full Name"],
+        ["coBorrowerDob", "Co-Borrower Date of Birth"],
+        ["coBorrowerSsn", "Co-Borrower SSN"],
+        ["coBorrowerPhone", "Co-Borrower Phone"],
+        ["coBorrowerEmail", "Co-Borrower Email"],
+        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Separated|Unmarried"]
       ],
       routes: [["Continue", "brand"]]
     }
@@ -49,7 +89,13 @@ export const flow: Flow = {
       fields: [
         ["brandPositioning", "Rep Positioning Statement", "textarea"],
         ["brandWhy", "Why Clients Choose Me", "textarea"],
-        ["brandProof", "Proof / Credibility", "textarea"]
+        ["brandProof", "Proof / Credibility", "textarea"],
+        ["loNmls", "Your NMLS ID"],
+        ["loOrganization", "Organization Name"],
+        ["loOrgNmls", "Organization NMLS ID"],
+        ["loPhone", "Your Phone"],
+        ["loEmail", "Your Email"],
+        ["loStateLicense", "Your State License #"]
       ],
       routes: [
         ["Use sample brand", "presetBrand"],
@@ -178,7 +224,13 @@ export const flow: Flow = {
         "Thank you for bringing me up to speed. Now that I understand the goal, I want to understand the property.\n\n" +
         "Is {{propertyAddress}} your primary residence?",
       fields: [
-        ["propertyAddress", "Property Address"],
+        ["propertyAddress", "Property Street"],
+        ["propertyCity", "City"],
+        ["propertyState", "State"],
+        ["propertyZip", "ZIP"],
+        ["propertyCounty", "County"],
+        ["propertyUnits", "Number of Units"],
+        ["propertyType", "Property Type", "select", "Single Family|Condominium|Townhouse|2-4 Units|Manufactured"],
         ["occupancy", "Occupancy", "select", "Primary Residence|Second Home|Investment Property"]
       ],
       routes: [
@@ -194,19 +246,28 @@ export const flow: Flow = {
         "What makes you feel that value is accurate?",
       fields: [
         ["purchaseDate", "Purchase Date"],
+        ["propertyYearBuilt", "Year Built"],
         ["estimatedValue", "Estimated Market Value"],
         ["valueReason", "Why They Believe That Value", "textarea"]
       ],
       routes: [["Continue", "jump:2"]]
     },
     {
-      title: "Home plans",
+      title: "Home plans & other real estate",
       script:
-        "Any recent renovations, upgrades, or planned improvements?\n\n" +
-        "And do you have any plans to move in the next few years?",
+        "Any recent renovations, upgrades, or planned improvements? And do you have any plans to move in the next few years?\n\n" +
+        "Do you own any other real estate besides this home? If so, let’s note it for the application.",
+      coach:
+        "Capture any Real Estate Owned here — it belongs on the 1003 (value, loan balance, and rental income if any).",
       fields: [
         ["propertyNotes", "Renovations / Property Notes", "textarea"],
-        ["movePlans", "Plans to Move"]
+        ["movePlans", "Plans to Move"],
+        ["reoAddress", "Other Property Address", "textarea"],
+        ["reoValue", "Other Property Value"],
+        ["reoStatus", "Status", "select", "Retained|Sold|Pending Sale"],
+        ["reoMortgageBalance", "Mortgage Balance"],
+        ["reoMonthlyPayment", "Monthly Payment"],
+        ["reoRentalIncome", "Gross Rental Income (monthly)"]
       ],
       routes: [
         ["Continue", "credit"],
@@ -276,9 +337,21 @@ export const flow: Flow = {
       script:
         "Now I want to understand the debt picture. For each account, I\u2019m going to look at the balance, the payment, and the interest rate.\n\n" +
         "The goal is not just to pay things off. The goal is to see whether paying them off creates enough monthly benefit to make sense.",
-      coach: "Ask what they actually pay, not just minimum payment.",
+      coach: "Ask what they actually pay, not just minimum payment. Log each account in the numbered slots so it maps to the 1003 liabilities.",
       fields: [
-        ["liabilitySummary", "Liability Summary", "textarea"],
+        ["liability1Creditor", "Liability 1 — Creditor"],
+        ["liability1Type", "Liability 1 — Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability1Balance", "Liability 1 — Balance"],
+        ["liability1Payment", "Liability 1 — Monthly Payment"],
+        ["liability2Creditor", "Liability 2 — Creditor"],
+        ["liability2Type", "Liability 2 — Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability2Balance", "Liability 2 — Balance"],
+        ["liability2Payment", "Liability 2 — Monthly Payment"],
+        ["liability3Creditor", "Liability 3 — Creditor"],
+        ["liability3Type", "Liability 3 — Type", "select", "Revolving|Installment|Mortgage|Lease|Other"],
+        ["liability3Balance", "Liability 3 — Balance"],
+        ["liability3Payment", "Liability 3 — Monthly Payment"],
+        ["liabilitySummary", "Additional Liabilities", "textarea"],
         ["totalDebtToPayoff", "Total Debt to Pay Off"],
         ["totalPaymentsToPayoff", "Total Monthly Payments"]
       ],
@@ -304,7 +377,14 @@ export const flow: Flow = {
         "How are you compensated: hourly, salary, commission, self-employed, retirement, or another source?",
       fields: [
         ["employmentType", "Employment Type", "select", "Salary|Hourly|Commission|Self-Employed|Retired|Other"],
-        ["employer", "Employer / Business"]
+        ["employer", "Employer / Business"],
+        ["borrowerPosition", "Position / Title"],
+        ["employerPhone", "Employer Phone"],
+        ["employerStreet", "Employer Street"],
+        ["employerCity", "Employer City"],
+        ["employerState", "Employer State"],
+        ["employerZip", "Employer ZIP"],
+        ["borrowerYearsInLineOfWork", "Years in This Line of Work"]
       ],
       routes: [
         ["Salary/hourly", "jump:1"],
@@ -320,7 +400,10 @@ export const flow: Flow = {
         "What is your gross monthly income before deductions, and what is your take-home income after deductions?",
       fields: [
         ["hireDate", "Hire Date"],
-        ["grossMonthlyIncome", "Gross Monthly Income"],
+        ["grossMonthlyIncome", "Base Monthly Income"],
+        ["incomeOvertime", "Overtime (monthly)"],
+        ["incomeBonus", "Bonus (monthly)"],
+        ["incomeOther", "Other Employment Income (monthly)"],
         ["netMonthlyIncome", "Net Monthly Income"]
       ],
       routes: [["Continue", "jump:5"]]
@@ -332,7 +415,8 @@ export const flow: Flow = {
         "Do you receive a base plus commission, or commission only?",
       fields: [
         ["commissionDetails", "Commission Details", "textarea"],
-        ["grossMonthlyIncome", "Gross Monthly Income"]
+        ["grossMonthlyIncome", "Base Monthly Income"],
+        ["incomeCommission", "Commission (monthly)"]
       ],
       routes: [["Continue", "jump:5"]]
     },
@@ -343,6 +427,7 @@ export const flow: Flow = {
         "Do you file as sole proprietor, LLC, S-corp, partnership, or corporation?",
       fields: [
         ["selfEmploymentDetails", "Self-Employment Details", "textarea"],
+        ["borrowerSelfEmployedShare", "Ownership Share %"],
         ["grossMonthlyIncome", "Estimated Gross Monthly Income"]
       ],
       routes: [["Continue", "jump:5"]]
@@ -353,7 +438,8 @@ export const flow: Flow = {
         "Congrats on retirement. What did you do before retiring, and what are your income sources now: Social Security, pension, retirement draws, disability, or something else?",
       fields: [
         ["retirementIncomeSources", "Retirement Income Sources", "textarea"],
-        ["grossMonthlyIncome", "Gross Monthly Income"]
+        ["grossMonthlyIncome", "Gross Monthly Income"],
+        ["incomeMilitary", "Military / VA Pay (monthly)"]
       ],
       routes: [["Continue", "jump:5"]]
     },
@@ -361,10 +447,19 @@ export const flow: Flow = {
       title: "Budget reality check",
       script:
         "Between your debt and other monthly expenses, you are spending roughly {{monthlyExpenseTotal}} per month. Your income is around {{grossMonthlyIncome}} gross and {{netMonthlyIncome}} take-home.\n\n" +
-        "How much are you realistically able to put away at the end of the month?",
+        "How much are you realistically able to put away at the end of the month?\n\n" +
+        "Any other income we should count — rental, Social Security, pension, child support? And if you’ve been at your job under two years, what did you do before?",
+      coach:
+        "Round out the 1003 income: other income sources and prior employment for anyone under two years at their current job.",
       fields: [
         ["monthlyExpenseTotal", "Monthly Expense Total"],
-        ["monthlySavings", "Amount Put Away Monthly"]
+        ["monthlySavings", "Amount Put Away Monthly"],
+        ["otherIncomeSource", "Other Income Source"],
+        ["otherIncomeAmount", "Other Income (monthly)"],
+        ["previousEmployer", "Previous Employer"],
+        ["previousPosition", "Previous Position"],
+        ["previousEmploymentDates", "Previous Employment Dates"],
+        ["previousMonthlyIncome", "Previous Monthly Income"]
       ],
       routes: [["Continue", "when:creditDeferred=yes?at:credit:3|assets"]]
     }
@@ -376,8 +471,16 @@ export const flow: Flow = {
         "Assets typically strengthen your profile. With that in mind, how much do you have set aside?\n\n" +
         "Do you have a savings account, emergency fund, 401(k), IRA, retirement account, or other reserves?",
       fields: [
-        ["checkingSavings", "Checking / Savings"],
-        ["retirementAssets", "Retirement Assets"],
+        ["checkingBank", "Checking Institution"],
+        ["checkingAccountNumber", "Checking Account #"],
+        ["checkingSavings", "Checking Balance"],
+        ["savingsBank", "Savings Institution"],
+        ["savingsAccountNumber", "Savings Account #"],
+        ["savingsBalance", "Savings Balance"],
+        ["retirementInstitution", "Retirement Institution"],
+        ["retirementAssets", "Retirement Balance"],
+        ["otherAssetsDescription", "Other Assets (description)", "textarea"],
+        ["otherAssetsValue", "Other Assets Value"],
         ["totalAssets", "Total Assets / Reserves"]
       ],
       routes: [["Continue", "jump:1"]]
@@ -450,7 +553,11 @@ export const flow: Flow = {
         ["loanPurpose", "Loan Purpose", "select", "Purchase|Refinance|Cash-Out Refinance|HELOC"],
         ["loanAmount", "Loan Amount"],
         ["interestRate", "Interest Rate"],
+        ["loanTermMonths", "Loan Term (months)"],
         ["newPayment", "New Payment"],
+        ["purchasePrice", "Purchase Price (if purchase)"],
+        ["downPayment", "Down Payment"],
+        ["mixedUse", "Mixed-Use Property?", "select", "No|Yes"],
         ["productReason", "Product Reason", "textarea"],
         ["financialBenefit", "Financial Benefit", "textarea"],
         ["emotionalBenefit", "Emotional Benefit", "textarea"]
