@@ -579,6 +579,11 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
         t("DeclSubjectToLien", data.declSubjectToLien) +
         t("DeclBankruptcyType", data.declBankruptcyType) +
         t("DeclarationNotes", data.declarationNotes) +
+        // Demographic / HMDA (URLA Section 8)
+        t("DemographicEthnicity", data.demoEthnicity) +
+        t("DemographicRace", data.demoRace) +
+        t("DemographicSex", data.demoSex) +
+        t("DemographicCollectionMethod", data.demoCollectionMethod) +
         t("PrepTime", data.prepTime) +
         t("CallbackTime", data.callbackTime) +
         t("Notes", data.runningNotes) +

@@ -496,7 +496,7 @@ export const flow: Flow = {
         "Are there any known issues with the roof, foundation, water damage, electrical, HVAC, broken glass, peeling paint, missing handrails, or ongoing renovations?",
       fields: [["propertyConditionNotes", "Property Condition Notes", "textarea"]],
       routes: [
-        ["No major concerns", "declarations"],
+        ["No major concerns", "credit"],
         ["There are concerns", "jump:1"]
       ]
     },
@@ -505,7 +505,7 @@ export const flow: Flow = {
       script:
         "Tell me what is going on, when it started, and whether it has been repaired or still needs work.",
       fields: [["propertyConcernDetails", "Condition Concern Details", "textarea"]],
-      routes: [["Continue", "declarations"]]
+      routes: [["Back to the flow — pull credit", "credit"]]
     }
   ],
   declarations: [
@@ -713,7 +713,7 @@ export const flow: Flow = {
     {
       title: "1003 \u2014 Declarations",
       script:
-        "Last set \u2014 these are standard questions every application requires. I\u2019ll run through them quickly; just answer yes or no and I\u2019ll note anything that needs a detail.",
+        "Almost done \u2014 these are standard questions every application requires. I\u2019ll run through them quickly; just answer yes or no and I\u2019ll note anything that needs a detail.",
       fields: [
         ["declOccupyPrimary", "Will occupy as primary residence?", "select", "Yes|No"],
         ["declOwnershipInterest", "Ownership interest in property in last 3 years?", "select", "No|Yes"],
@@ -733,6 +733,23 @@ export const flow: Flow = {
         ["declBankruptcyType", "Bankruptcy Type (if yes)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"]
       ],
       routes: [["Continue", "jump:10"]]
+    },
+    {
+      title: "1003 \u2014 Demographic Information (HMDA)",
+      script:
+        "The last section is the government\u2019s demographic information \u2014 it\u2019s voluntary and used to make sure lenders treat everyone fairly. You\u2019re not required to answer, but I do have to ask.\n\n" +
+        "For ethnicity, race, and sex, tell me what you\u2019d like recorded, or that you\u2019d prefer not to provide it.",
+      coach:
+        "URLA Section 8 (HMDA). Purely voluntary \u2014 if the borrower declines, select 'I do not wish to provide.' Race allows more than one; note any additional selections in the detail box.",
+      fields: [
+        ["demoEthnicity", "Ethnicity", "select", "Hispanic or Latino|Not Hispanic or Latino|I do not wish to provide"],
+        ["demoEthnicityDetail", "Ethnicity Detail (Mexican, Puerto Rican, Cuban, other)"],
+        ["demoRace", "Race", "select", "American Indian or Alaska Native|Asian|Black or African American|Native Hawaiian or Other Pacific Islander|White|I do not wish to provide"],
+        ["demoRaceDetail", "Race Detail / Additional Selections", "textarea"],
+        ["demoSex", "Sex", "select", "Female|Male|I do not wish to provide"],
+        ["demoCollectionMethod", "How Collected", "select", "Face-to-Face|Telephone|Fax or Mail|Email or Internet"]
+      ],
+      routes: [["Continue", "jump:11"]]
     },
     {
       title: "1003 \u2014 Loan Originator",
