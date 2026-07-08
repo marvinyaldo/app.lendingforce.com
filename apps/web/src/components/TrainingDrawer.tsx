@@ -1,16 +1,11 @@
-import { trainingDecks, decks } from "./trainingQuestions.js";
-
-export { decks };
+import { trainingAreas } from "./trainingQuestions.js";
 
 interface TrainingDrawerProps {
   open: boolean;
-  activeDeck: string | null;
-  onSelect: (deck: string) => void;
   onClose: () => void;
 }
 
-export function TrainingDrawer({ open, activeDeck, onSelect, onClose }: TrainingDrawerProps) {
-  const active = trainingDecks.find((d) => d.key === activeDeck) ?? trainingDecks[0]!;
+export function TrainingDrawer({ open, onClose }: TrainingDrawerProps) {
   return (
     <>
       {open && <div className="drawer-overlay" onClick={onClose} />}
@@ -29,24 +24,14 @@ export function TrainingDrawer({ open, activeDeck, onSelect, onClose }: Training
               Close
             </button>
           </div>
-          <p className="muted small">Discovery questions to ask, by scenario.</p>
-          <div className="rebuttal-grid">
-            {decks.map((d) => (
-              <button
-                key={d.key}
-                type="button"
-                className={d.key === active.key ? "primary" : ""}
-                onClick={() => onSelect(d.key)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
+          <p className="muted small">
+            Discovery questions by area — Goals, Income, Property, Assets, Credit.
+          </p>
         </div>
         <div className="drawer-body">
-          {active.areas.map((area) => (
+          {trainingAreas.map((area) => (
             <div key={area.area}>
-              <p className="section-title">{area.area} Discovery</p>
+              <p className="section-title">{area.area}</p>
               {area.scenarios.map((sc) => (
                 <div key={sc.title} className="tq-card">
                   <h3 className="tq-title">{sc.title}</h3>

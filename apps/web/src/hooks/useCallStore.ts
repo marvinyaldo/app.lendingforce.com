@@ -63,7 +63,6 @@ export interface UseCallStore {
   activeRebuttal: RebuttalKey | null;
   drawerOpen: boolean;
   trainingOpen: boolean;
-  activeDeck: string | null;
   screen: "guided" | "export";
   setField: (key: string, value: string) => void;
   startSection: (section: SectionId) => void;
@@ -74,7 +73,7 @@ export interface UseCallStore {
   handleRoute: (label: string, action: string) => void;
   openDrawer: () => void;
   closeDrawer: () => void;
-  openTraining: (deck: string) => void;
+  openTraining: () => void;
   closeTraining: () => void;
   loadRebuttal: (key: RebuttalKey) => void;
   routeGoal: (goal: string) => void;
@@ -93,7 +92,6 @@ export function useCallStore(): UseCallStore {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeRebuttal, setActiveRebuttal] = useState<RebuttalKey | null>(null);
   const [trainingOpen, setTrainingOpen] = useState(false);
-  const [activeDeck, setActiveDeck] = useState<string | null>(null);
   const [screen, setScreen] = useState<"guided" | "export">("guided");
 
   // Auto-save: debounce writes so rapid typing doesn't thrash localStorage.
@@ -140,10 +138,7 @@ export function useCallStore(): UseCallStore {
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
-  const openTraining = useCallback((deck: string) => {
-    setActiveDeck(deck);
-    setTrainingOpen(true);
-  }, []);
+  const openTraining = useCallback(() => setTrainingOpen(true), []);
   const closeTraining = useCallback(() => setTrainingOpen(false), []);
 
   const loadRebuttal = useCallback((key: RebuttalKey) => {
@@ -301,7 +296,6 @@ export function useCallStore(): UseCallStore {
     activeRebuttal,
     drawerOpen,
     trainingOpen,
-    activeDeck,
     screen,
     setField,
     startSection,

@@ -24,11 +24,7 @@ function AppInner() {
         Rebuttals
       </button>
 
-      <button
-        className="training-launch"
-        type="button"
-        onClick={() => store.openTraining("goals")}
-      >
+      <button className="training-launch" type="button" onClick={store.openTraining}>
         Digging Deep
       </button>
 
@@ -41,12 +37,7 @@ function AppInner() {
         onSelect={store.loadRebuttal}
       />
 
-      <TrainingDrawer
-        open={store.trainingOpen}
-        activeDeck={store.activeDeck}
-        onSelect={store.openTraining}
-        onClose={store.closeTraining}
-      />
+      <TrainingDrawer open={store.trainingOpen} onClose={store.closeTraining} />
 
       <header>
         <div className="brand-kicker">
