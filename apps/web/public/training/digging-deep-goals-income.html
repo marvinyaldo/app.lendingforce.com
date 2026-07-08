@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Digging Deep — Goals &amp; Income</title>
+<style>
+:root{
+  --ink:#141924; --navy:#1b2332; --navy-2:#232d40; --navy-3:#2c384f;
+  --gold:#c9a24b; --gold-soft:#d9b869; --gold-dim:#8a7434;
+  --paper:#f4f1ea; --paper-2:#ffffff; --line:#e2ddd2;
+  --text:#2a2f3a; --text-soft:#5b6270; --text-mute:#8a909c;
+  --onDark:#eef1f6; --onDark-soft:#aeb6c6; --onDark-mute:#7c8698;
+  --shadow:0 18px 50px rgba(10,15,25,.28);
+  --sans:"Segoe UI",Roboto,Helvetica,Arial,system-ui,sans-serif;
+  --serif:Cambria,Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#0d1017;font-family:var(--sans);color:var(--text);-webkit-font-smoothing:antialiased;}
+.deck{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+.stage{position:relative;width:min(100vw,calc(100vh * 16 / 9));height:min(100vh,calc(100vw * 9 / 16));background:var(--paper);overflow:hidden;box-shadow:var(--shadow);container-type:size;}
+.slide{position:absolute;inset:0;padding:5.2% 6.4%;opacity:0;visibility:hidden;transition:opacity .35s ease;display:flex;flex-direction:column;justify-content:center;}
+.slide.is-active{opacity:1;visibility:visible;}
+.slide--light{background:var(--paper);}
+.slide--divider,.slide--cover{background:radial-gradient(120% 120% at 15% 10%,var(--navy-2),var(--navy) 60%,var(--ink));color:var(--onDark);}
+.std-inner{width:100%;max-width:100%;}
+.divider-inner,.cover-inner{width:100%;max-width:82%;}
+.eyebrow{font-size:1.05cqh;font-weight:700;letter-spacing:.32em;text-transform:uppercase;}
+.eyebrow--gold{color:var(--gold);}
+.eyebrow--muted{color:var(--text-mute);}
+.slide-h2{font-family:var(--serif);font-size:4.2cqh;font-weight:700;color:var(--navy);letter-spacing:-.01em;}
+.slide-h2--onDark{color:var(--onDark);}
+.slide-intro{margin-top:1.6cqh;font-size:1.9cqh;line-height:1.5;color:var(--text-soft);max-width:70%;}
+.cover-title{font-family:var(--serif);font-size:8.6cqh;font-weight:700;line-height:.98;margin-top:2.2cqh;letter-spacing:-.02em;color:var(--onDark);}
+.cover-sub{font-family:var(--serif);font-size:4.4cqh;font-weight:600;color:var(--gold);margin-top:.4cqh;letter-spacing:-.01em;}
+.cover-lead{margin-top:3.4cqh;font-size:2.3cqh;line-height:1.5;color:var(--onDark);max-width:76%;}
+.cover-note{margin-top:2.2cqh;font-size:1.55cqh;line-height:1.5;color:var(--onDark-soft);max-width:70%;padding-left:1.6cqh;border-left:2px solid var(--gold-dim);}
+.area-grid{margin-top:3.4cqh;display:grid;grid-template-columns:repeat(4,1fr);gap:1.6cqh;}
+.area-card{position:relative;background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:2.6cqh 1.9cqh 2.4cqh;display:flex;flex-direction:column;min-height:30cqh;}
+.area-card--active{background:var(--navy);border-color:var(--navy);color:var(--onDark);box-shadow:var(--shadow);}
+.area-num{font-family:var(--serif);font-size:3cqh;font-weight:700;color:var(--text-mute);}
+.area-card--active .area-num{color:var(--gold);}
+.area-name{font-family:var(--serif);font-size:2.7cqh;font-weight:700;margin-top:.6cqh;color:var(--navy);}
+.area-card--active .area-name{color:var(--onDark);}
+.area-desc{margin-top:1cqh;font-size:1.4cqh;line-height:1.45;color:var(--text-soft);}
+.area-card--active .area-desc{color:var(--onDark-soft);}
+.area-badge{position:absolute;left:1.9cqh;bottom:2.2cqh;font-size:.95cqh;font-weight:700;letter-spacing:.22em;color:var(--ink);background:var(--gold);padding:.55cqh 1.1cqh;border-radius:20px;}
+.divider-name{font-family:var(--serif);font-size:8cqh;font-weight:700;color:var(--onDark);margin-top:1.6cqh;letter-spacing:-.02em;}
+.divider-body{margin-top:2.8cqh;font-size:2.1cqh;line-height:1.6;color:var(--onDark-soft);max-width:88%;}
+.card-layout{display:grid;grid-template-columns:0.92fr 1.08fr;gap:5cqh;align-items:center;height:100%;}
+.card-title{font-family:var(--serif);font-size:4cqh;font-weight:700;color:var(--navy);margin-top:1cqh;line-height:1.04;letter-spacing:-.01em;}
+.card-tagline{margin-top:1cqh;font-size:1.35cqh;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-dim);}
+.why-box{margin-top:2.6cqh;background:var(--navy);border-radius:12px;padding:2.4cqh 2.4cqh;box-shadow:var(--shadow);}
+.why-label{font-size:1.1cqh;font-weight:700;letter-spacing:.24em;color:var(--gold);}
+.why-text{margin-top:1.1cqh;font-size:1.7cqh;line-height:1.55;color:var(--onDark);}
+.qs-label{font-size:1.15cqh;font-weight:700;letter-spacing:.24em;color:var(--text-mute);margin-bottom:2cqh;}
+.q-list{list-style:none;display:flex;flex-direction:column;gap:1.55cqh;}
+.q-item{display:flex;gap:1.6cqh;align-items:flex-start;}
+.q-num{flex:none;width:3.4cqh;height:3.4cqh;border-radius:50%;background:var(--gold);color:var(--ink);font-family:var(--serif);font-weight:700;font-size:1.7cqh;display:flex;align-items:center;justify-content:center;margin-top:.1cqh;}
+.q-text{font-size:1.72cqh;line-height:1.45;color:var(--text);}
+.take-grid{margin-top:3.4cqh;display:grid;grid-template-columns:1fr 1fr;gap:2.6cqh 5cqh;}
+.take-row{display:flex;gap:2cqh;align-items:flex-start;}
+.take-num{flex:none;font-family:var(--serif);font-size:4.4cqh;font-weight:700;color:var(--gold);line-height:1;width:5cqh;}
+.take-head{font-size:1.95cqh;font-weight:700;color:var(--onDark);line-height:1.3;}
+.take-text{margin-top:.8cqh;font-size:1.55cqh;line-height:1.5;color:var(--onDark-soft);}
+.chrome{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;gap:2vh;padding:1.4vh;z-index:20;pointer-events:none;}
+.chrome .btn,.chrome .counter{pointer-events:auto;}
+.btn{background:rgba(20,25,36,.82);color:#eef1f6;border:1px solid rgba(255,255,255,.14);width:4.6vh;height:4.6vh;border-radius:50%;font-size:2.2vh;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .1s;backdrop-filter:blur(6px);}
+.btn:hover{background:var(--gold);color:var(--ink);}
+.btn:active{transform:scale(.94);}
+.btn:disabled{opacity:.32;cursor:default;}
+.btn:disabled:hover{background:rgba(20,25,36,.82);color:#eef1f6;}
+.counter{font-size:1.5vh;color:#cfd5e2;font-variant-numeric:tabular-nums;letter-spacing:.06em;background:rgba(20,25,36,.82);padding:.9vh 1.8vh;border-radius:20px;backdrop-filter:blur(6px);min-width:9vh;text-align:center;}
+.counter b{color:var(--gold);}
+.progress{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0;z-index:30;transition:width .35s ease;}
+.hint{position:fixed;top:1.6vh;right:2vh;font-size:1.25vh;color:#9aa2b4;letter-spacing:.04em;z-index:20;opacity:.9;}
+@media (max-width:640px){
+  .hint{display:none}
+  .slide-intro,.cover-lead,.cover-note,.divider-body{max-width:100%;}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="bar"></div>
+<div class="hint">← → to navigate</div>
+<div class="deck">
+  <div class="stage">
+<section class="slide slide--cover" data-label="Cover">
+  <div class="cover-inner">
+    <p class="eyebrow eyebrow--gold">INTERACTIVE TRAINING · DISCOVERY</p>
+    <h1 class="cover-title">Digging Deep</h1>
+    <p class="cover-sub">Goals &amp; Income</p>
+    <p class="cover-lead">Asking the questions that uncover what the borrower actually needs — not just what they first say they want.</p>
+    <p class="cover-note">A borrower interview covers four areas — Goals, Income, Assets &amp; Property. This module drills the first two.</p>
+  </div>
+</section>
+<section class="slide slide--light" data-label="The Four Areas">
+  <div class="std-inner">
+    <h2 class="slide-h2">The Four Discovery Areas</h2>
+    <p class="slide-intro">A complete interview covers all four on every call. This module focuses on the first two — where the real digging happens.</p>
+    <div class="area-grid">
+    <div class="area-card area-card--active">
+      <span class="area-num">01</span>
+      <h3 class="area-name">Goals</h3>
+      <p class="area-desc">Why they're really here — financial, emotional &amp; practical</p>
+      <span class="area-badge">THIS MODULE</span>
+    </div>
+    <div class="area-card area-card--active">
+      <span class="area-num">02</span>
+      <h3 class="area-name">Income</h3>
+      <p class="area-desc">How they qualify — stability, type &amp; recent changes</p>
+      <span class="area-badge">THIS MODULE</span>
+    </div>
+    <div class="area-card">
+      <span class="area-num">03</span>
+      <h3 class="area-name">Assets</h3>
+      <p class="area-desc">What they have — cash flow, reserves &amp; comfort level</p>
+    </div>
+    <div class="area-card">
+      <span class="area-num">04</span>
+      <h3 class="area-name">Property</h3>
+      <p class="area-desc">What they're working with — value, equity &amp; plans</p>
+    </div>
+    </div>
+  </div>
+</section>
+<section class="slide slide--divider" data-label="Goals">
+  <div class="divider-inner">
+    <p class="eyebrow eyebrow--gold">DISCOVERY AREA 01</p>
+    <h2 class="divider-name">Goals</h2>
+    <p class="divider-body">Start with the surface reason, then dig deeper. The stated goal is rarely the whole story. A borrower who says "lower my payment" may really need cash-flow relief from job stress or family expenses. Your job is to find the reason underneath the reason.</p>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Lower the Monthly Payment">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">GOALS DISCOVERY</p>
+      <h2 class="card-title">Lower the Monthly Payment</h2>
+      <p class="card-tagline">DIG BENEATH THE STATED GOAL</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">"Lower my payment" is a surface answer. Find out whether it's about a fixed budget, freeing up flexibility, or a specific life change behind it.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">What would having a lower payment actually change for you day-to-day?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Is this more about the monthly savings, or is there something specific the difference would go toward?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">Are you on a fixed budget right now, or is this more about freeing up flexibility?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Have you had any changes to your income or expenses recently?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">How long are you planning to stay in this home — long-term, or possibly selling in a few years?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Cash Out &amp; Debt Consolidation">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">GOALS DISCOVERY</p>
+      <h2 class="card-title">Cash Out &amp; Debt Consolidation</h2>
+      <p class="card-tagline">UNDERSTAND THE USE OF FUNDS</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Cash-out goals usually have a specific purpose. Knowing the use of funds lets you size the loan and present the right product.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">What would the cash be used for — home improvements, debt payoff, an emergency fund?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">How much debt are we talking about — do you have a rough total in mind?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">If we could consolidate that debt and lower your overall payment, would that feel like a win?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Do you have a specific amount you need to pull out, or are you open to exploring what makes sense?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">What's driving the timing — is there something coming up that prompted this?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="PMI Removal &amp; Term Change">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">GOALS DISCOVERY</p>
+      <h2 class="card-title">PMI Removal &amp; Term Change</h2>
+      <p class="card-tagline">USUALLY AN EASIER CONVERSATION</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Borrowers focused on PMI or term are often equity-aware and financially engaged — a great signal. Confirm the value picture and expand the goal.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">Do you know roughly what your home is worth today compared to when you bought it?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Have you made any improvements that might have increased the value?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">What made you start thinking about PMI removal now — did you notice it on your statement?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">If we could remove the PMI and keep your payment similar, or even lower it, would that interest you?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">Are you also open to talking about shortening the term if the numbers made sense?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Still Exploring">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">GOALS DISCOVERY</p>
+      <h2 class="card-title">Still Exploring</h2>
+      <p class="card-tagline">FIND THE EMOTIONAL TRIGGER</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Borrowers who are "just exploring" usually have a trigger they haven't fully put into words yet. Your job is to surface it.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">What made you decide to look into your options now — was there something specific that prompted it?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Is there a financial goal you've had on the back burner that this might help with?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">When you think about your mortgage, what's the one thing you'd change if you could?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Are you more focused on reducing your monthly cost, accessing some equity, or both?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">What would the ideal outcome look like if everything went perfectly?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--divider" data-label="Income">
+  <div class="divider-inner">
+    <p class="eyebrow eyebrow--gold">DISCOVERY AREA 02</p>
+    <h2 class="divider-name">Income</h2>
+    <p class="divider-body">Income type decides which questions matter most. W-2 salaried is the simplest. Hourly and commission need a two-year history and average. Self-employed requires returns and a real look at the business. Match your questions to the type in front of you.</p>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Salaried / W-2 Employee">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">INCOME DISCOVERY</p>
+      <h2 class="card-title">Salaried / W-2 Employee</h2>
+      <p class="card-tagline">FOCUS ON STABILITY &amp; TENURE</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">The simplest income to document. Confirm tenure, the makeup of the pay, and anything on the horizon that could shift qualification.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">How long have you been with your current employer?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Is your income base salary, or does it include any bonuses or overtime?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">Has your income changed recently — a raise, a reduction, or a change in hours?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">How secure do you feel in your position right now?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">Are you planning to stay in this role, or are there any upcoming changes?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Hourly / Commission">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">INCOME DISCOVERY</p>
+      <h2 class="card-title">Hourly / Commission</h2>
+      <p class="card-tagline">NEEDS 2-YEAR HISTORY &amp; AVERAGE</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Variable income is qualified on a two-year average. Probe consistency, recent trend, and how the pay is actually structured.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">Would you say your income has been consistent over the last two years, or has it fluctuated?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Do you work overtime regularly, and do you expect that to continue?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">How does your commission structure work — tied to deals, hours, or performance?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Has your income gone up or down recently compared to prior years?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">Do you have pay stubs and W-2s from the last two years handy?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Self-Employed / Business Owner">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">INCOME DISCOVERY</p>
+      <h2 class="card-title">Self-Employed / Business Owner</h2>
+      <p class="card-tagline">NEEDS 2 YRS RETURNS + BUSINESS DOCS</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Qualified from tax returns and business documentation. Understanding the business helps you explain how the income calculation works.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">How long have you owned your business?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">How has the business performed over the last 12–24 months?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">How do you typically pay yourself — salary, draw, or distributions?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Are your business and personal finances kept completely separate?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">Do you expect this year's return to look similar, higher, or lower than last year?</span></li>
+      <li class="q-item"><span class="q-num">6</span><span class="q-text">What's your busiest season — is income spread out or concentrated in certain months?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--light" data-label="Rental, VA &amp; Support Income">
+  <div class="std-inner card-layout">
+    <div class="card-head">
+      <p class="eyebrow eyebrow--muted">INCOME DISCOVERY</p>
+      <h2 class="card-title">Rental, VA &amp; Support Income</h2>
+      <p class="card-tagline">DOCUMENT IT TO MAKE IT USABLE</p>
+      <div class="why-box">
+        <p class="why-label">WHY IT MATTERS</p>
+        <p class="why-text">Secondary income can strengthen a file when it's properly documented and likely to continue. The right questions tell you whether it's usable.</p>
+      </div>
+    </div>
+    <div class="card-qs">
+      <p class="qs-label">QUESTIONS TO ASK</p>
+      <ul class="q-list">
+      <li class="q-item"><span class="q-num">1</span><span class="q-text">Is the rental income on a lease agreement, and are you reporting it on your taxes?</span></li>
+      <li class="q-item"><span class="q-num">2</span><span class="q-text">Is the VA or disability income expected to continue long-term?</span></li>
+      <li class="q-item"><span class="q-num">3</span><span class="q-text">Have you been receiving the child support consistently — and for how long?</span></li>
+      <li class="q-item"><span class="q-num">4</span><span class="q-text">Is documentation available: court orders, tax returns showing rental income, a VA award letter?</span></li>
+      <li class="q-item"><span class="q-num">5</span><span class="q-text">Do you have any upcoming changes to this income source?</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="slide slide--divider slide--takeaways" data-label="Takeaways">
+  <div class="std-inner">
+    <h2 class="slide-h2 slide-h2--onDark">What to Carry Into Every Call</h2>
+    <div class="take-grid">
+    <div class="take-row">
+      <span class="take-num">1</span>
+      <div class="take-body">
+        <p class="take-head">The stated goal is the doorway, not the room.</p>
+        <p class="take-text">Lead with the surface answer, then ask the follow-up that reveals the real driver underneath.</p>
+      </div>
+    </div>
+    <div class="take-row">
+      <span class="take-num">2</span>
+      <div class="take-body">
+        <p class="take-head">Match your questions to the income type.</p>
+        <p class="take-text">W-2 is about stability; variable and self-employed are about history, trend, and documentation.</p>
+      </div>
+    </div>
+    <div class="take-row">
+      <span class="take-num">3</span>
+      <div class="take-body">
+        <p class="take-head">Listen for the trigger.</p>
+        <p class="take-text">"Just exploring" almost always hides an emotional or financial event. Find it before you talk product.</p>
+      </div>
+    </div>
+    <div class="take-row">
+      <span class="take-num">4</span>
+      <div class="take-body">
+        <p class="take-head">Surface the documentation early.</p>
+        <p class="take-text">Knowing what's available — returns, leases, award letters — turns a maybe into a usable file.</p>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+  </div>
+</div>
+<div class="chrome">
+  <button class="btn" id="prev" aria-label="Previous slide" type="button">&#8249;</button>
+  <div class="counter"><b id="cur">1</b> / <span id="tot">1</span></div>
+  <button class="btn" id="next" aria-label="Next slide" type="button">&#8250;</button>
+</div>
+<script>
+(function(){
+  var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total=slides.length, i=0;
+  var prev=document.getElementById('prev'), next=document.getElementById('next');
+  var cur=document.getElementById('cur'), tot=document.getElementById('tot');
+  var bar=document.getElementById('bar');
+  tot.textContent=total;
+  function show(n){
+    i=Math.max(0,Math.min(total-1,n));
+    slides.forEach(function(s,idx){s.classList.toggle('is-active',idx===i);});
+    cur.textContent=i+1;
+    bar.style.width=((i+1)/total*100)+'%';
+    prev.disabled=(i===0); next.disabled=(i===total-1);
+  }
+  prev.addEventListener('click',function(){show(i-1);});
+  next.addEventListener('click',function(){show(i+1);});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();show(i+1);}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();show(i-1);}
+    else if(e.key==='Home'){show(0);}
+    else if(e.key==='End'){show(total-1);}
+  });
+  var sx=null;
+  document.addEventListener('touchstart',function(e){sx=e.changedTouches[0].clientX;},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;
+    if(Math.abs(dx)>50){show(dx<0?i+1:i-1);}sx=null;
+  },{passive:true});
+  show(0);
+})();
+</script>
+</body>
+</html>

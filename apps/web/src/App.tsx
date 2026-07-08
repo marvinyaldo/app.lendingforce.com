@@ -4,6 +4,7 @@ import { Snapshot } from "./components/Snapshot.js";
 import { GuidedScreen } from "./components/GuidedScreen.js";
 import { ExportScreen } from "./components/ExportScreen.js";
 import { RebuttalDrawer } from "./components/RebuttalDrawer.js";
+import { TrainingDrawer } from "./components/TrainingDrawer.js";
 import { PinGate } from "./components/PinGate.js";
 
 export function App() {
@@ -19,8 +20,16 @@ function AppInner() {
 
   return (
     <>
-      <button className="rebuttal-launch" onClick={store.openDrawer}>
+      <button className="rebuttal-launch" type="button" onClick={store.openDrawer}>
         Rebuttals
+      </button>
+
+      <button
+        className="training-launch"
+        type="button"
+        onClick={() => store.openTraining("goals")}
+      >
+        Digging Deep
       </button>
 
       <RebuttalDrawer
@@ -30,6 +39,13 @@ function AppInner() {
         setField={store.setField}
         onClose={store.closeDrawer}
         onSelect={store.loadRebuttal}
+      />
+
+      <TrainingDrawer
+        open={store.trainingOpen}
+        activeDeck={store.activeDeck}
+        onSelect={store.openTraining}
+        onClose={store.closeTraining}
       />
 
       <header>
@@ -46,6 +62,7 @@ function AppInner() {
           onStartSection={store.startSection}
           onShowExport={store.showExport}
           onRouteGoal={store.routeGoal}
+          onOpenTraining={store.openTraining}
         />
 
         <main className="panel">
