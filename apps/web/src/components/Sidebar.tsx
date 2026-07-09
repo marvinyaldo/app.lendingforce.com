@@ -8,6 +8,7 @@ interface SidebarProps {
   onShowExport: () => void;
   onRouteGoal: (goal: string) => void;
   onOpenTraining: (area: string) => void;
+  onReset: () => void;
 }
 
 const sections: { id: SectionId; label: string }[] = [
@@ -31,7 +32,8 @@ export function Sidebar({
   onStartSection,
   onShowExport,
   onRouteGoal,
-  onOpenTraining
+  onOpenTraining,
+  onReset
 }: SidebarProps) {
   return (
     <nav className="panel">
@@ -76,6 +78,10 @@ export function Sidebar({
         <button onClick={() => onRouteGoal("Cash out")}>Cash Out</button>
         <button onClick={() => onRouteGoal("Home improvement")}>Renovation</button>
       </div>
+      <hr />
+      <button type="button" className="navbtn danger" onClick={onReset}>
+        ↺ New Client (Reset)
+      </button>
     </nav>
   );
 }

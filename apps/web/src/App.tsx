@@ -59,6 +59,7 @@ function AppInner() {
           onShowExport={store.showExport}
           onRouteGoal={store.routeGoal}
           onOpenTraining={store.openTraining}
+          onReset={store.clearAll}
         />
 
         <main className="panel">
