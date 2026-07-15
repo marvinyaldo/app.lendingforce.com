@@ -530,31 +530,46 @@ export const flow: Flow = {
   ],
   presentation: [
     {
-      title: "Bring good news",
+      title: "The introduction & recap",
       script:
-        "I have good news. I put together a solution that addresses what you told me was most important.\n\n" +
-        "Before I show you the numbers, let\u2019s recap what you wanted to accomplish.",
-      fields: [["goalRecapFinal", "Final Goal Recap", "textarea"]],
+        "Hi {{borrowerFirstName}}, it\u2019s {{loName}} calling back from Lending Force. I have exciting news for you \u2014 you\u2019re going to love this! Everything came back better than expected!\n\n" +
+        "What we\u2019re going to do is review everything together, answer any questions you have, get your loan documents out to you and signed, and your appraisal ordered today! Can you grab a pen and paper for me please?\n\n" +
+        "When we first spoke, you mentioned your main goal is {{financialGoal}}, right?\n\n" +
+        "And by doing so, you mentioned it would help you {{emotionalGoal}}, right?\n\n" +
+        "And you mentioned your home should appraise for {{estimatedValue}}, right?\n\n" +
+        "Great! Thank you for confirming all those for me. Here is your new solution!!",
+      coach:
+        "This is the refinance callback. Confirm each blank out loud and get the \u201cright?\u201d agreement before revealing the numbers.",
+      fields: [
+        ["financialGoal", "Financial Goal", "textarea"],
+        ["emotionalGoal", "Emotional Goal", "textarea"],
+        ["estimatedValue", "Home Should Appraise For"]
+      ],
       routes: [
-        ["Client agrees with recap", "jump:1"],
+        ["Client confirms \u2014 show the solution", "jump:1"],
         ["Client corrects recap", "goals"]
       ]
     },
     {
-      title: "Present solution",
+      title: "The sale",
       script:
-        "Here is what we are going to do.\n\n" +
-        "Product: {{productType}}\nLoan Amount: {{loanAmount}}\nRate: {{interestRate}}\nEstimated Payment: {{newPayment}}\n\n" +
-        "The reason I chose this option is because {{productReason}}.\n\n" +
-        "The financial benefit is {{financialBenefit}}.\n\n" +
-        "The personal benefit is {{emotionalBenefit}}.",
+        "Here is your new solution!\n\n" +
+        "Program: {{productType}}\n" +
+        "Payment: {{newPayment}}  \u00b7  Savings: {{paymentSavingsMonthly}}/mo  &  {{paymentSavingsAnnual}}/yr\n" +
+        "Interest rate: {{interestRate}}\n" +
+        "Closing cost (range): {{closingCostRange}}\n" +
+        "Loan amount: {{loanAmount}}",
+      coach: "Present payment first, then the monthly and annual savings, then rate, closing-cost range, and loan amount.",
       fields: [
-        ["productType", "Product Type"],
-        ["loanPurpose", "Loan Purpose", "select", "Purchase|Refinance|Cash-Out Refinance|HELOC"],
-        ["loanAmount", "Loan Amount"],
-        ["interestRate", "Interest Rate"],
-        ["loanTermMonths", "Loan Term (months)"],
+        ["productType", "Program / Product Type"],
         ["newPayment", "New Payment"],
+        ["paymentSavingsMonthly", "Monthly Savings"],
+        ["paymentSavingsAnnual", "Annual Savings"],
+        ["interestRate", "Interest Rate"],
+        ["closingCostRange", "Closing Cost (range)"],
+        ["loanAmount", "Loan Amount"],
+        ["loanPurpose", "Loan Purpose", "select", "Purchase|Refinance|Cash-Out Refinance|HELOC"],
+        ["loanTermMonths", "Loan Term (months)"],
         ["purchasePrice", "Purchase Price (if purchase)"],
         ["downPayment", "Down Payment"],
         ["mixedUse", "Mixed-Use Property?", "select", "No|Yes"],
@@ -570,29 +585,20 @@ export const flow: Flow = {
       ]
     },
     {
-      title: "Soft close",
+      title: "The close",
       script:
-        "Based on everything we reviewed, this makes sense because it solves the reason you started this conversation in the first place.\n\n" +
-        "The next step is simple. Would you prefer the appraisal during the week or on the weekend?",
-      fields: [["appraisalPreference", "Appraisal Preference"]],
-      routes: [
-        ["Weekday", "set:appraisalPreference=Weekday;jump:3"],
-        ["Weekend", "set:appraisalPreference=Weekend;jump:3"],
-        ["Pushback", "drawer"]
-      ]
-    },
-    {
-      title: "Hard close / next docs",
-      script:
-        "Perfect. For the appraisal, you can use a debit or credit card. Which would you prefer?\n\n" +
-        "In the meantime, I\u2019ll need your mortgage statement, homeowner\u2019s insurance, and income documents. Please work on those while I finalize the option.\n\n" +
-        "While we\u2019re on the phone, let\u2019s go ahead and complete your application so we can get this moving.",
+        "I\u2019m excited for you! We were able to accomplish everything you sought out when we started this process.\n\n" +
+        "The next step is to secure the pricing on the application and get you e-signed. For the appraisal, did you want to use a credit or debit card?\n\n" +
+        "In the meantime, I\u2019ll need your mortgage statement, homeowner\u2019s insurance, and income documents. Let\u2019s complete your application now so we can get this moving.",
       fields: [
-        ["paymentMethod", "Appraisal Payment Method"],
+        ["paymentMethod", "Appraisal Payment Method", "select", "Credit|Debit"],
         ["docsNeeded", "Documents Needed", "textarea"],
         ["followUpTime", "Follow-Up Time"]
       ],
-      routes: [["Complete the 1003 application", "application"]]
+      routes: [
+        ["Complete the 1003 application", "application"],
+        ["Pushback", "drawer"]
+      ]
     }
   ],
   propertyConditions: [
@@ -822,22 +828,25 @@ export const flow: Flow = {
       script:
         "Almost done \u2014 these are standard questions every application requires. I\u2019ll run through them quickly; just answer yes or no and I\u2019ll note anything that needs a detail.",
       fields: [
-        ["declOccupyPrimary", "Will occupy as primary residence?", "select", "Yes|No"],
-        ["declOwnershipInterest", "Ownership interest in property in last 3 years?", "select", "No|Yes"],
-        ["declFamilyRelationship", "Family/business relationship with seller?", "select", "No|Yes"],
-        ["declBorrowingMoney", "Borrowing undisclosed money for this loan?", "select", "No|Yes"],
-        ["declOtherMortgage", "Applying for a mortgage on another property?", "select", "No|Yes"],
-        ["declNewCredit", "Applying for new credit before closing?", "select", "No|Yes"],
-        ["declSubjectToLien", "Property subject to a clean-energy (PACE) lien?", "select", "No|Yes"],
-        ["declCoSigner", "Co-signer/guarantor on undisclosed debt?", "select", "No|Yes"],
-        ["declOutstandingJudgments", "Any outstanding judgments?", "select", "No|Yes"],
-        ["declDelinquentFederalDebt", "Delinquent/default on federal debt?", "select", "No|Yes"],
-        ["declPartyToLawsuit", "Party to a lawsuit?", "select", "No|Yes"],
-        ["declConveyedTitleInLieu", "Conveyed title in lieu of foreclosure (7 yrs)?", "select", "No|Yes"],
-        ["declPreForeclosureShortSale", "Pre-foreclosure/short sale (7 yrs)?", "select", "No|Yes"],
-        ["declPropertyForeclosed", "Property foreclosed (7 yrs)?", "select", "No|Yes"],
-        ["declDeclaredBankruptcy", "Declared bankruptcy (7 yrs)?", "select", "No|Yes"],
-        ["declBankruptcyType", "Bankruptcy Type (if yes)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"]
+        ["declOccupyPrimary", "A. Will you occupy as your primary residence?", "select", "Yes|No"],
+        ["declOwnershipInterest", "A1. Ownership interest in another property in last 3 years?", "select", "No|Yes"],
+        ["declOwnershipType", "A1. If yes — type of property", "select", "Primary Residence|Second Home|Investment Property"],
+        ["declTitleHeld", "A1. If yes — how did you hold title?", "select", "Sole|Joint with spouse|Joint with another person"],
+        ["declFamilyRelationship", "B. Family/business affiliation with the seller? (purchase)", "select", "No|Yes"],
+        ["declBorrowingMoney", "C. Borrowing undisclosed money for this transaction?", "select", "No|Yes"],
+        ["declBorrowedAmount", "C. If yes — amount"],
+        ["declOtherMortgage", "D1. Applying for another mortgage on/before closing (undisclosed)?", "select", "No|Yes"],
+        ["declNewCredit", "D2. Applying for new credit on/before closing (undisclosed)?", "select", "No|Yes"],
+        ["declSubjectToLien", "E. Property subject to a priority lien (e.g., PACE)?", "select", "No|Yes"],
+        ["declCoSigner", "F. Co-signer or guarantor on undisclosed debt?", "select", "No|Yes"],
+        ["declOutstandingJudgments", "G. Any outstanding judgments against you?", "select", "No|Yes"],
+        ["declDelinquentFederalDebt", "H. Currently delinquent or in default on Federal debt?", "select", "No|Yes"],
+        ["declPartyToLawsuit", "I. Party to a lawsuit with personal financial liability?", "select", "No|Yes"],
+        ["declConveyedTitleInLieu", "J. Conveyed title in lieu of foreclosure (7 yrs)?", "select", "No|Yes"],
+        ["declPreForeclosureShortSale", "K. Completed a pre-foreclosure or short sale (7 yrs)?", "select", "No|Yes"],
+        ["declPropertyForeclosed", "L. Had property foreclosed (7 yrs)?", "select", "No|Yes"],
+        ["declDeclaredBankruptcy", "M. Declared bankruptcy (7 yrs)?", "select", "No|Yes"],
+        ["declBankruptcyType", "M. If yes — bankruptcy type(s)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"]
       ],
       routes: [["Continue", "jump:10"]]
     },
@@ -850,9 +859,13 @@ export const flow: Flow = {
         "URLA Section 8 (HMDA). Purely voluntary \u2014 if the borrower declines, select 'I do not wish to provide.' Race allows more than one; note any additional selections in the detail box.",
       fields: [
         ["demoEthnicity", "Ethnicity", "select", "Hispanic or Latino|Not Hispanic or Latino|I do not wish to provide"],
-        ["demoEthnicityDetail", "Ethnicity Detail (Mexican, Puerto Rican, Cuban, other)"],
-        ["demoRace", "Race", "select", "American Indian or Alaska Native|Asian|Black or African American|Native Hawaiian or Other Pacific Islander|White|I do not wish to provide"],
-        ["demoRaceDetail", "Race Detail / Additional Selections", "textarea"],
+        ["demoEthnicitySub", "If Hispanic or Latino — origin", "select", "Mexican|Puerto Rican|Cuban|Other Hispanic or Latino"],
+        ["demoEthnicityOtherOrigin", "If other Hispanic/Latino — specify origin"],
+        ["demoRace", "Race (select all that apply — note extras below)", "select", "American Indian or Alaska Native|Asian|Black or African American|Native Hawaiian or Other Pacific Islander|White|I do not wish to provide"],
+        ["demoRaceAmIndianTribe", "If American Indian/Alaska Native — enrolled or principal tribe"],
+        ["demoRaceAsianSub", "If Asian — subcategory", "select", "Asian Indian|Chinese|Filipino|Japanese|Korean|Vietnamese|Other Asian"],
+        ["demoRacePacificSub", "If Pacific Islander — subcategory", "select", "Native Hawaiian|Guamanian or Chamorro|Samoan|Other Pacific Islander"],
+        ["demoRaceDetail", "Additional race selections / other detail", "textarea"],
         ["demoSex", "Sex", "select", "Female|Male|I do not wish to provide"],
         ["demoCollectionMethod", "How Collected", "select", "Face-to-Face|Telephone|Fax or Mail|Email or Internet"]
       ],

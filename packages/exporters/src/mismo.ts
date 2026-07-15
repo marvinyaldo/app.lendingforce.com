@@ -563,6 +563,9 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
         n("PurchasePrice", data.purchasePrice) +
         n("DownPayment", data.downPayment) +
         n("ProposedNewPayment", data.newPayment) +
+        n("MonthlySavings", data.paymentSavingsMonthly) +
+        n("AnnualSavings", data.paymentSavingsAnnual) +
+        t("ClosingCostRange", data.closingCostRange) +
         t("PropertyType", data.propertyType) +
         t("MixedUse", data.mixedUse) +
         t("FinancialBenefit", data.financialBenefit) +
@@ -577,11 +580,17 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
         // Declarations (raw Y/N, lossless mirror of the structured indicators)
         t("DeclFamilyRelationship", data.declFamilyRelationship) +
         t("DeclSubjectToLien", data.declSubjectToLien) +
+        t("DeclOwnershipType", data.declOwnershipType) +
+        t("DeclTitleHeld", data.declTitleHeld) +
+        n("DeclBorrowedAmount", data.declBorrowedAmount) +
         t("DeclBankruptcyType", data.declBankruptcyType) +
         t("DeclarationNotes", data.declarationNotes) +
         // Demographic / HMDA (URLA Section 8)
         t("DemographicEthnicity", data.demoEthnicity) +
+        t("DemographicEthnicitySubcategory", data.demoEthnicitySub) +
         t("DemographicRace", data.demoRace) +
+        t("DemographicRaceAsianSubcategory", data.demoRaceAsianSub) +
+        t("DemographicRacePacificSubcategory", data.demoRacePacificSub) +
         t("DemographicSex", data.demoSex) +
         t("DemographicCollectionMethod", data.demoCollectionMethod) +
         t("PrepTime", data.prepTime) +
