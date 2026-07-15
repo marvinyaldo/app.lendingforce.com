@@ -578,13 +578,40 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
         n("REOMonthlyPayment", data.reoMonthlyPayment) +
         n("REORentalIncome", data.reoRentalIncome) +
         // Declarations (raw Y/N, lossless mirror of the structured indicators)
+        t("DeclAlimonyObligation", data.declAlimonyObligation) +
         t("DeclFamilyRelationship", data.declFamilyRelationship) +
         t("DeclSubjectToLien", data.declSubjectToLien) +
         t("DeclOwnershipType", data.declOwnershipType) +
         t("DeclTitleHeld", data.declTitleHeld) +
         n("DeclBorrowedAmount", data.declBorrowedAmount) +
+        t("DeclBankruptcyHomeIncluded", data.declBankruptcyHomeIncluded) +
         t("DeclBankruptcyType", data.declBankruptcyType) +
+        t("DeclForbearance", data.declForbearance) +
         t("DeclarationNotes", data.declarationNotes) +
+        t("CoBorrowerDeclarationNotes", data.coBorrowerDeclarationNotes) +
+        // Property condition (any Yes = dig deeper / check Pathfinder/AMP)
+        t("PCOver20Acres", data.pcOver20Acres) +
+        t("PCCommercialUse", data.pcCommercialUse) +
+        t("PCHandrails", data.pcHandrails) +
+        t("PCFoundation", data.pcFoundation) +
+        t("PCElectrical", data.pcElectrical) +
+        t("PCWindowsDoors", data.pcWindowsDoors) +
+        t("PCWoodSiding", data.pcWoodSiding) +
+        t("PCWaterStains", data.pcWaterStains) +
+        t("PCSubfloor", data.pcSubfloor) +
+        t("PCUnfinished", data.pcUnfinished) +
+        t("PCIncomeFromProperty", data.pcIncomeFromProperty) +
+        t("PCPeelingPaint", data.pcPeelingPaint) +
+        t("PCRoofLeaks", data.pcRoofLeaks) +
+        t("PCSolarPanels", data.pcSolarPanels) +
+        t("PCAppraiserAccess", data.pcAppraiserAccess) +
+        t("PCListedForSale", data.pcListedForSale) +
+        t("PCUtilitiesOn", data.pcUtilitiesOn) +
+        t("PCConditionNotes", data.pcConditionNotes) +
+        t("CondoBuilderControl", data.pcCondoBuilderControl) +
+        t("CondoUnder5Units", data.pcCondoUnder5Units) +
+        t("CondoInvestor49Percent", data.pcCondoInvestor49) +
+        t("HOAContact", data.pcHoaContact) +
         // Demographic / HMDA (URLA Section 8)
         t("DemographicEthnicity", data.demoEthnicity) +
         t("DemographicEthnicitySubcategory", data.demoEthnicitySub) +
