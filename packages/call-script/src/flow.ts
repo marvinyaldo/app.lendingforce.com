@@ -3,11 +3,28 @@ import type { Flow } from "@lf/types";
 export const flow: Flow = {
   intro: [
     {
-      title: "Open the call",
+      title: "How is the call starting?",
+      script:
+        "Pick the path that matches this call. Both paths capture the same borrower and contact info and both feed the same 1003 \u2014 the only thing that changes is the opener you read.",
+      coach:
+        "Outbound = you\u2019re calling the lead first. Inbound callback = the borrower is returning a call from our mortgage team. Either way, after the opener you\u2019ll confirm contact info, capture household, and continue into discovery. Everything you capture from here flows into the 1003 walk-through at the end.",
+      fields: [
+        ["loName", "LO Name"],
+        ["callDirection", "Call Direction", "select", "Outbound (we're calling out)|Inbound Callback (they called us)"]
+      ],
+      routes: [
+        ["Outbound \u2014 we\u2019re calling out", "set:callDirection=Outbound;jump:1"],
+        ["Inbound callback \u2014 they called us", "set:callDirection=Inbound Callback;jump:2"]
+      ]
+    },
+    {
+      title: "Outbound opener",
       script:
         "Hello {{borrowerFirstName}}, this is {{loName}} with Lending Force.\n\n" +
         "I know your time is valuable, so I\u2019ll keep this direct. We received your information and wanted to connect to take a fresh look at your mortgage options.\n\n" +
         "The goal today is simple: I\u2019ll ask a few questions, understand what you\u2019re trying to accomplish, and see whether there is a real financial benefit. If there is, I\u2019ll make the next steps easy. If there is not, I\u2019ll tell you that too. Fair enough?",
+      coach:
+        "Use this opener when you are calling the lead. On agreement, jump to the shared \u201cConfirm contact information\u201d step \u2014 same one the inbound path lands on.",
       fields: [
         ["loName", "LO Name"],
         ["borrowerFirstName", "Borrower First Name"],
@@ -18,7 +35,7 @@ export const flow: Flow = {
         ["preferredPhone", "Preferred Phone"]
       ],
       routes: [
-        ["Client agrees", "jump:1"],
+        ["Client agrees", "jump:3"],
         ["Not interested", "rebuttal:notInterested"],
         ["Busy", "rebuttal:busy"],
         ["Send info", "rebuttal:sendInfo"],
@@ -27,12 +44,48 @@ export const flow: Flow = {
       ]
     },
     {
+      title: "Inbound refinance callback opener",
+      script:
+        "Thank you for calling Lending Force, this is {{loName}}, a licensed loan officer. Who do I have the pleasure of speaking with?\n\n" +
+        "\u2014 Borrower provides name \u2014\n\n" +
+        "Hi, {{borrowerFirstName}}. It looks like you\u2019re returning a call from our mortgage team \u2014 is that correct?\n\n" +
+        "\u2022 If YES and you can locate the record:\n" +
+        "  \u201cPerfect. Let me pull up the information associated with your number so I can see what prompted the call.\u201d\n" +
+        "  \u201cI found it. It looks like we were reaching out regarding potential refinance options for your property at {{propertyAddress}}, {{propertyCity}}. Is that the property you\u2019re calling about?\u201d\n\n" +
+        "\u2022 If NO record is available:\n" +
+        "  \u201cNo problem. What phone number or property address would the original call have been associated with?\u201d\n\n" +
+        "Great \u2014 while I have you, let me confirm a few basics so I can pull the right file and take a fresh look at your options.",
+      coach:
+        "Use this opener when the borrower is calling us back from a prior outreach. Try to locate the record first \u2014 if you cannot, ask for the phone number or property address so you can look them up. Then continue to the same \u201cConfirm contact information\u201d step the outbound path lands on so both paths converge on the same 1003.",
+      fields: [
+        ["loName", "LO Name"],
+        ["borrowerFirstName", "Borrower First Name"],
+        ["borrowerMiddleName", "Middle Name"],
+        ["borrowerLastName", "Borrower Last Name"],
+        ["borrowerSuffix", "Suffix"],
+        ["borrowerFullName", "Borrower Full Name"],
+        ["preferredPhone", "Preferred Phone"],
+        ["callbackLookupPhone", "Phone Number on Original Call"],
+        ["propertyAddress", "Property Street"],
+        ["propertyCity", "Property City"],
+        ["propertyState", "Property State"],
+        ["propertyZip", "Property ZIP"],
+        ["callbackRecordFound", "Record Found?", "select", "Yes|No"]
+      ],
+      routes: [
+        ["Confirmed the property \u2014 continue", "jump:3"],
+        ["Record not found \u2014 collected info, continue", "jump:3"],
+        ["Not the right person / wrong number", "rebuttal:oldInquiry"],
+        ["Busy \u2014 asked us to call back", "rebuttal:busy"]
+      ]
+    },
+    {
       title: "Confirm contact information",
       script:
         "Perfect. Before I go too far, let me make sure I have the best contact information for you.\n\n" +
         "What is the best number to reach you, your email, and the address where you currently live?",
       coach:
-        "This is where the 1003 borrower + address block gets captured up front. Confirm the current home address and how long they have been there.",
+        "Shared step \u2014 both intro paths land here. This is where the 1003 borrower + address block gets captured up front. Confirm the current home address and how long they have been there.",
       fields: [
         ["borrowerCellPhone", "Cell Phone"],
         ["borrowerHomePhone", "Home Phone"],
@@ -51,7 +104,7 @@ export const flow: Flow = {
         ["currentHousingPayment", "Monthly Housing Payment"],
         ["mailingAddress", "Mailing Address (if different)", "textarea"]
       ],
-      routes: [["Continue", "jump:2"]]
+      routes: [["Continue", "jump:4"]]
     },
     {
       title: "Household & co-borrower",
@@ -623,11 +676,63 @@ export const flow: Flow = {
   ],
   declarations: [
     {
-      title: "Declarations setup",
+      title: "1003 \u2014 Declarations",
       script:
-        "I\u2019m going to ask a few standard questions that help make sure the file is complete. If anything is a yes, just tell me and I\u2019ll document the details.",
-      fields: [["declarationNotes", "Declaration Notes", "textarea"]],
-      routes: [["Continue to export", "export"]]
+        "Before we wrap up the application, I have to walk through the standard declarations. These are required on every mortgage \u2014 just answer yes or no and I\u2019ll note details on anything that\u2019s a yes. I\u2019ll ask for both you and any co-borrower.",
+      coach:
+        "Any YES means dig deeper and check Pathfinder. Capture for both Borrower (B) and Co-Borrower (CB) \u2014 use the co-borrower notes box for any differences. Same field keys as the 1003 walk-through, so answers pre-fill in the application section.",
+      fields: [
+        ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
+        ["declAlimonyObligation", "Obligated to pay alimony, child support, or separate maintenance?", "select", "No|Yes"],
+        ["declOccupyPrimary", "A. Will you occupy the property as your primary residence?", "select", "Yes|No"],
+        ["declOwnershipInterest", "A1. Ownership interest in another property in last 3 years?", "select", "No|Yes"],
+        ["declOwnershipType", "A1. If yes — type of property", "select", "Primary Residence|Second Home|Investment Property"],
+        ["declTitleHeld", "A1. If yes — how did you hold title?", "select", "Sole|Joint with spouse|Joint with another person"],
+        ["declFamilyRelationship", "B. Family/business affiliation with the seller? (purchase)", "select", "No|Yes"],
+        ["declBorrowingMoney", "C. Borrowing undisclosed money for this transaction?", "select", "No|Yes"],
+        ["declBorrowedAmount", "C. If yes — amount"],
+        ["declOtherMortgage", "D1. Applying for another mortgage on/before closing (undisclosed)?", "select", "No|Yes"],
+        ["declNewCredit", "D2. Applying for new credit on/before closing (undisclosed)?", "select", "No|Yes"],
+        ["declSubjectToLien", "E. Property subject to a priority lien (e.g., PACE)?", "select", "No|Yes"],
+        ["declCoSigner", "F. Co-signer or guarantor on undisclosed debt?", "select", "No|Yes"],
+        ["declOutstandingJudgments", "G. Any outstanding judgments against you?", "select", "No|Yes"],
+        ["declDelinquentFederalDebt", "H. Currently delinquent or in default on Federal debt?", "select", "No|Yes"],
+        ["declPartyToLawsuit", "I. Party to a lawsuit with personal financial liability?", "select", "No|Yes"],
+        ["declConveyedTitleInLieu", "J. Conveyed title in lieu of foreclosure (7 yrs)?", "select", "No|Yes"],
+        ["declPreForeclosureShortSale", "K. Completed a pre-foreclosure or short sale (7 yrs)?", "select", "No|Yes"],
+        ["declPropertyForeclosed", "L. Had property foreclosed (7 yrs)?", "select", "No|Yes"],
+        ["declDeclaredBankruptcy", "M. Declared bankruptcy (past 7 yrs)?", "select", "No|Yes"],
+        ["declBankruptcyHomeIncluded", "M. If yes — was a home included in the bankruptcy?", "select", "No|Yes"],
+        ["declBankruptcyType", "M. If yes — bankruptcy type(s)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"],
+        ["declForbearance", "Currently in forbearance on any mortgage?", "select", "No|Yes"],
+        ["coBorrowerDeclarationNotes", "Co-Borrower declaration differences (if any)", "textarea"],
+        ["declarationNotes", "Additional Declaration Notes", "textarea"]
+      ],
+      routes: [["Continue to demographics", "jump:1"]]
+    },
+    {
+      title: "1003 \u2014 Government Monitoring (Demographics)",
+      script:
+        "Now I\u2019ll ask a few demographic questions. We are required to ask them to comply with federal lending laws that prohibit creditors from discrimination against applicants. Answering the questions is optional but encouraged.\n\n" +
+        "Let\u2019s start with ethnicity, then race, then gender \u2014 and we can select more than one category for race.",
+      coach:
+        "Government monitoring (HMDA) \u2014 see AMP. Voluntary but encouraged. Ethnicity: if Hispanic, what origin(s)? Gender: what would you like me to select? Race: what would you like me to select \u2014 we can do more than one. Same field keys as the 1003 walk-through, so answers pre-fill in the application section.",
+      fields: [
+        ["demoEthnicity", "Ethnicity", "select", "Hispanic or Latino|Not Hispanic or Latino|I do not wish to provide"],
+        ["demoEthnicitySub", "If Hispanic or Latino — origin", "select", "Mexican|Puerto Rican|Cuban|Other Hispanic or Latino"],
+        ["demoEthnicityOtherOrigin", "If other Hispanic/Latino — specify origin"],
+        ["demoRace", "Race (select all that apply — note extras below)", "select", "American Indian or Alaska Native|Asian|Black or African American|Native Hawaiian or Other Pacific Islander|White|I do not wish to provide"],
+        ["demoRaceAmIndianTribe", "If American Indian/Alaska Native — enrolled or principal tribe"],
+        ["demoRaceAsianSub", "If Asian — subcategory", "select", "Asian Indian|Chinese|Filipino|Japanese|Korean|Vietnamese|Other Asian"],
+        ["demoRacePacificSub", "If Pacific Islander — subcategory", "select", "Native Hawaiian|Guamanian or Chamorro|Samoan|Other Pacific Islander"],
+        ["demoRaceDetail", "Additional race selections / other detail", "textarea"],
+        ["demoSex", "Sex / Gender", "select", "Female|Male|I do not wish to provide"],
+        ["demoCollectionMethod", "How Collected", "select", "Face-to-Face|Telephone|Fax or Mail|Email or Internet"]
+      ],
+      routes: [
+        ["Continue to the 1003 walk-through", "application"],
+        ["Skip to export", "export"]
+      ]
     }
   ],
   application: [
