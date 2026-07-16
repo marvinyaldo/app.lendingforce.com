@@ -34,6 +34,64 @@ interface PersistShape {
   state: CallState;
 }
 
+// ---- Saved applications: keeps ONLY the two most recent apps on this device. ----
+const SAVED_APPS_KEY = "lfSavedAppsV1";
+const MAX_SAVED_APPS = 2;
+
+export interface SavedApp {
+  id: string;
+  savedAt: string;
+  label: string;
+  data: CallData;
+  state: CallState;
+}
+
+function readSavedApps(): SavedApp[] {
+  try {
+    const raw = localStorage.getItem(SAVED_APPS_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw) as unknown;
+    return Array.isArray(arr) ? (arr as SavedApp[]).slice(0, MAX_SAVED_APPS) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeSavedApps(apps: SavedApp[]): void {
+  try {
+    localStorage.setItem(SAVED_APPS_KEY, JSON.stringify(apps.slice(0, MAX_SAVED_APPS)));
+  } catch {
+    /* quota or privacy mode — ignore */
+  }
+}
+
+/** Best display label for a saved app. */
+function appLabel(data: CallData): string {
+  return (
+    data.borrowerFullName ||
+    data.borrowerFirstName ||
+    data.propertyAddress ||
+    "Unnamed client"
+  );
+}
+
+// Brand + LO identity persist across clients, so they don't count as "client data".
+const nonClientKeys = new Set<string>([
+  ...brandFields,
+  "loName",
+  "loNmls",
+  "loOrganization",
+  "loOrgNmls",
+  "loPhone",
+  "loEmail",
+  "loStateLicense"
+]);
+
+/** True when the call has real client data worth archiving. */
+function hasClientData(data: CallData): boolean {
+  return Object.entries(data).some(([k, v]) => v && !nonClientKeys.has(k));
+}
+
 function readSnapshot(): PersistShape | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -65,6 +123,9 @@ export interface UseCallStore {
   trainingOpen: boolean;
   activeArea: string | null;
   screen: "guided" | "export";
+  savedApps: SavedApp[];
+  saveApp: () => void;
+  loadApp: (id: string) => void;
   setField: (key: string, value: string) => void;
   startSection: (section: SectionId) => void;
   showExport: () => void;
@@ -95,6 +156,9 @@ export function useCallStore(): UseCallStore {
   const [trainingOpen, setTrainingOpen] = useState(false);
   const [activeArea, setActiveArea] = useState<string | null>(null);
   const [screen, setScreen] = useState<"guided" | "export">("guided");
+  const [savedApps, setSavedApps] = useState<SavedApp[]>(
+    typeof window !== "undefined" ? readSavedApps() : []
+  );
 
   // Auto-save: debounce writes so rapid typing doesn't thrash localStorage.
   const saveTimer = useRef<number | undefined>(undefined);
@@ -127,6 +191,45 @@ export function useCallStore(): UseCallStore {
 
   const setField = useCallback((key: string, value: string) => {
     setData((d) => ({ ...d, [key]: value }));
+  }, []);
+
+  /** Archive the current application; keeps only the two most recent. */
+  const archiveApp = useCallback(
+    (d: CallData, s: CallState): SavedApp[] => {
+      const existing = readSavedApps();
+      const payload = JSON.stringify(d);
+      // If the most recent save is identical, don't duplicate it.
+      if (existing[0] && JSON.stringify(existing[0].data) === payload) return existing;
+      const entry: SavedApp = {
+        id: `app-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        savedAt: new Date().toISOString(),
+        label: appLabel(d),
+        data: d,
+        state: s
+      };
+      const next = [entry, ...existing].slice(0, MAX_SAVED_APPS);
+      writeSavedApps(next);
+      return next;
+    },
+    []
+  );
+
+  const saveApp = useCallback(() => {
+    if (!hasClientData(data)) {
+      alert("Nothing to save yet — capture some client info first.");
+      return;
+    }
+    setSavedApps(archiveApp(data, state));
+    alert("Application saved. (The two most recent are kept.)");
+  }, [archiveApp, data, state]);
+
+  const loadApp = useCallback((id: string) => {
+    const app = readSavedApps().find((a) => a.id === id);
+    if (!app) return;
+    // Restore the app, but the LO's persistent brand always wins.
+    setData({ ...app.data, ...readBrand() });
+    setState(app.state);
+    setScreen("guided");
   }, []);
 
   const startSection = useCallback((section: SectionId) => {
@@ -287,13 +390,22 @@ export function useCallStore(): UseCallStore {
   }, []);
 
   const clearAll = useCallback(() => {
-    if (!confirm("Clear all data? (Your saved personal brand will be kept.)")) return;
+    if (
+      !confirm(
+        "Start a new client? The current application will be saved to Recent Applications (the two most recent are kept), and your personal brand stays."
+      )
+    )
+      return;
+    // Auto-archive the finished client before wiping, so it can be reloaded.
+    if (hasClientData(data)) {
+      setSavedApps(archiveApp(data, state));
+    }
     localStorage.removeItem(STORAGE_KEY);
     // Keep the LO's brand — it lives in its own key and should survive a clear.
     setData(readBrand());
     setState(initialState);
     setScreen("guided");
-  }, []);
+  }, [archiveApp, data, state]);
 
   return {
     state,
@@ -303,6 +415,9 @@ export function useCallStore(): UseCallStore {
     trainingOpen,
     activeArea,
     screen,
+    savedApps,
+    saveApp,
+    loadApp,
     setField,
     startSection,
     showExport,

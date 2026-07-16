@@ -84,6 +84,9 @@ function AppInner() {
           setField={store.setField}
           onSave={store.save}
           onLoad={store.load}
+          savedApps={store.savedApps}
+          onSaveApp={store.saveApp}
+          onLoadApp={store.loadApp}
         />
       </div>
     </>

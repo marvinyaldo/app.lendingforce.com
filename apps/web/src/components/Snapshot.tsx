@@ -1,13 +1,25 @@
 import type { CallData } from "@lf/types";
+import type { SavedApp } from "../hooks/useCallStore.js";
 
 interface SnapshotProps {
   data: CallData;
   setField: (key: string, value: string) => void;
   onSave: () => void;
   onLoad: () => void;
+  savedApps: SavedApp[];
+  onSaveApp: () => void;
+  onLoadApp: (id: string) => void;
 }
 
-export function Snapshot({ data, setField, onSave, onLoad }: SnapshotProps) {
+export function Snapshot({
+  data,
+  setField,
+  onSave,
+  onLoad,
+  savedApps,
+  onSaveApp,
+  onLoadApp
+}: SnapshotProps) {
   const name = data.borrowerFullName || data.borrowerFirstName || "No borrower yet";
   return (
     <aside className="panel">
@@ -64,6 +76,26 @@ export function Snapshot({ data, setField, onSave, onLoad }: SnapshotProps) {
         Save Progress
       </button>{" "}
       <button onClick={onLoad}>Load Saved</button>
+      <hr />
+      <p className="section-title">Recent Applications (last 2)</p>
+      <button type="button" onClick={onSaveApp}>
+        Save Current Application
+      </button>
+      {savedApps.length === 0 ? (
+        <p className="small muted">No saved applications yet. Finished apps are saved automatically when you start a new client.</p>
+      ) : (
+        savedApps.map((app) => (
+          <div key={app.id} className="saved-app">
+            <div className="saved-app-info">
+              <strong>{app.label}</strong>
+              <span className="small muted">{new Date(app.savedAt).toLocaleString()}</span>
+            </div>
+            <button type="button" onClick={() => onLoadApp(app.id)}>
+              Load
+            </button>
+          </div>
+        ))
+      )}
     </aside>
   );
 }

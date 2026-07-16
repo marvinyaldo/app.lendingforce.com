@@ -587,3 +587,28 @@ hr {
   line-height: 1.4;
   color: var(--ink);
 }
+
+/* ---- Recent applications (last 2) ---- */
+.saved-app {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  background: #fff;
+}
+.saved-app-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.saved-app-info strong {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
