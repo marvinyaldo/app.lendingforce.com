@@ -322,10 +322,7 @@ export const flow: Flow = {
         ["reoMonthlyPayment", "Monthly Payment"],
         ["reoRentalIncome", "Gross Rental Income (monthly)"]
       ],
-      routes: [
-        ["Continue", "credit"],
-        ["Condition concerns", "propertyConditions"]
-      ]
+      routes: [["Continue", "credit"]]
     }
   ],
   credit: [
@@ -656,22 +653,46 @@ export const flow: Flow = {
   ],
   propertyConditions: [
     {
-      title: "Property red flags",
+      title: "Property Condition",
       script:
-        "I\u2019m going to ask a few quick property questions so we do not run into avoidable issues later.\n\n" +
-        "Are there any known issues with the roof, foundation, water damage, electrical, HVAC, broken glass, peeling paint, missing handrails, or ongoing renovations?",
-      fields: [["propertyConditionNotes", "Property Condition Notes", "textarea"]],
-      routes: [
-        ["No major concerns", "credit"],
-        ["There are concerns", "jump:1"]
-      ]
+        "A few property-condition questions for the appraisal. Any “yes” here means we dig deeper, ask more, and check Pathfinder/AMP before moving on.",
+      coach:
+        "Any Y = dig deeper, ask more questions, check Pathfinder. AMP surfaces the warning and the required action based on the client’s response. Use AMP!",
+      fields: [
+        ["pcOver20Acres", "Is the property size greater than 20 acres?", "select", "No|Yes"],
+        ["pcCommercialUse", "Is the property set up for business/commercial use?", "select", "No|Yes"],
+        ["pcHandrails", "FHA/USDA/VA: Any missing/broken/unsecured handrails (incl. deck)?", "select", "No|Yes"],
+        ["pcFoundation", "Foundation sinking/cracked/uneven/crumbling/unsound?", "select", "No|Yes"],
+        ["pcElectrical", "Exposed electric wire / missing switch plates?", "select", "No|Yes"],
+        ["pcWindowsDoors", "Broken/damaged/missing windows or doors (home/garage)?", "select", "No|Yes"],
+        ["pcWoodSiding", "Decaying/rotting wood or missing siding?", "select", "No|Yes"],
+        ["pcWaterStains", "Any visible water stains / standing water?", "select", "No|Yes"],
+        ["pcSubfloor", "Any exposed subfloor in the home?", "select", "No|Yes"],
+        ["pcUnfinished", "Anything unfinished / under renovation / in a temp state?", "select", "No|Yes"],
+        ["pcIncomeFromProperty", "Any income/loss derived from the property?", "select", "No|Yes"],
+        ["pcPeelingPaint", "FHA/VA/USDA: Any chipped/peeling paint on home/deck/garage?", "select", "No|Yes"],
+        ["pcRoofLeaks", "Any active leaks in roof / missing shingles?", "select", "No|Yes"],
+        ["pcSolarPanels", "Does the property have solar panels?", "select", "No|Yes"],
+        ["pcAppraiserAccess", "All rooms/outbuildings accessible to appraiser (crawl space & attic)?", "select", "Yes|No"],
+        ["pcListedForSale", "Is the home currently listed for sale?", "select", "No|Yes"],
+        ["pcUtilitiesOn", "FHA/VA: Are the utilities on and fully functioning?", "select", "Yes|No"],
+        ["pcConditionNotes", "Property condition notes / dig-deeper details", "textarea"]
+      ],
+      routes: [["Continue to condo questions", "jump:1"]]
     },
     {
-      title: "Condition concern details",
+      title: "Condo Questions (if applicable)",
       script:
-        "Tell me what is going on, when it started, and whether it has been repaired or still needs work.",
-      fields: [["propertyConcernDetails", "Condition Concern Details", "textarea"]],
-      routes: [["Back to the flow — pull credit", "credit"]]
+        "If the subject is a condo, a few extra questions. A “yes” on these can mean financing may not be available — foreshadow that a condo questionnaire may be required, and always check Pathfinder.",
+      coach:
+        "Condo-specific: if Yes, financing potentially not available (see Pathfinder). Foreshadow the condo questionnaire. Always check Pathfinder!",
+      fields: [
+        ["pcCondoBuilderControl", "Is the association still under the builder/developer’s control?", "select", "No|Yes"],
+        ["pcCondoUnder5Units", "Are there fewer than 5 units in the complex?", "select", "No|Yes"],
+        ["pcCondoInvestor49", "Are 49% or more units held as investment properties?", "select", "No|Yes"],
+        ["pcHoaContact", "HOA contact information", "textarea"]
+      ],
+      routes: [["Save & go to export", "export"]]
     }
   ],
   declarations: [
@@ -729,10 +750,7 @@ export const flow: Flow = {
         ["demoSex", "Sex / Gender", "select", "Female|Male|I do not wish to provide"],
         ["demoCollectionMethod", "How Collected", "select", "Face-to-Face|Telephone|Fax or Mail|Email or Internet"]
       ],
-      routes: [
-        ["Continue to the 1003 walk-through", "application"],
-        ["Skip to export", "export"]
-      ]
+      routes: [["Continue to property condition", "propertyConditions"]]
     }
   ],
   application: [
@@ -929,106 +947,9 @@ export const flow: Flow = {
       routes: [["Continue", "jump:9"]]
     },
     {
-      title: "1003 \u2014 Declarations",
-      script:
-        "Now for the declarations \u2014 I have to ask these for the application. Just answer yes or no and I\u2019ll note details on anything that\u2019s a yes. Ask these for the borrower and any co-borrower.",
-      coach:
-        "Any YES means dig deeper and check Pathfinder. Capture for both Borrower (B) and Co-Borrower (CB) \u2014 use the co-borrower notes box for any differences.",
-      fields: [
-        ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
-        ["declAlimonyObligation", "Obligated to pay alimony, child support, or separate maintenance?", "select", "No|Yes"],
-        ["declOccupyPrimary", "A. Will you occupy the property as your primary residence?", "select", "Yes|No"],
-        ["declOwnershipInterest", "A1. Ownership interest in another property in last 3 years?", "select", "No|Yes"],
-        ["declOwnershipType", "A1. If yes — type of property", "select", "Primary Residence|Second Home|Investment Property"],
-        ["declTitleHeld", "A1. If yes — how did you hold title?", "select", "Sole|Joint with spouse|Joint with another person"],
-        ["declFamilyRelationship", "B. Family/business affiliation with the seller? (purchase)", "select", "No|Yes"],
-        ["declBorrowingMoney", "C. Borrowing undisclosed money for this transaction?", "select", "No|Yes"],
-        ["declBorrowedAmount", "C. If yes — amount"],
-        ["declOtherMortgage", "D1. Applying for another mortgage on/before closing (undisclosed)?", "select", "No|Yes"],
-        ["declNewCredit", "D2. Applying for new credit on/before closing (undisclosed)?", "select", "No|Yes"],
-        ["declSubjectToLien", "E. Property subject to a priority lien (e.g., PACE)?", "select", "No|Yes"],
-        ["declCoSigner", "F. Co-signer or guarantor on undisclosed debt?", "select", "No|Yes"],
-        ["declOutstandingJudgments", "G. Any outstanding judgments against you?", "select", "No|Yes"],
-        ["declDelinquentFederalDebt", "H. Currently delinquent or in default on Federal debt?", "select", "No|Yes"],
-        ["declPartyToLawsuit", "I. Party to a lawsuit with personal financial liability?", "select", "No|Yes"],
-        ["declConveyedTitleInLieu", "J. Conveyed title in lieu of foreclosure (7 yrs)?", "select", "No|Yes"],
-        ["declPreForeclosureShortSale", "K. Completed a pre-foreclosure or short sale (7 yrs)?", "select", "No|Yes"],
-        ["declPropertyForeclosed", "L. Had property foreclosed (7 yrs)?", "select", "No|Yes"],
-        ["declDeclaredBankruptcy", "M. Declared bankruptcy (past 7 yrs)?", "select", "No|Yes"],
-        ["declBankruptcyHomeIncluded", "M. If yes — was a home included in the bankruptcy?", "select", "No|Yes"],
-        ["declBankruptcyType", "M. If yes — bankruptcy type(s)", "select", "Chapter 7|Chapter 11|Chapter 12|Chapter 13"],
-        ["declForbearance", "Currently in forbearance on any mortgage?", "select", "No|Yes"],
-        ["coBorrowerDeclarationNotes", "Co-Borrower declaration differences (if any)", "textarea"]
-      ],
-      routes: [["Continue", "jump:10"]]
-    },
-    {
-      title: "1003 \u2014 Government Monitoring (Demographics)",
-      script:
-        "Now I will be asking a few demographic questions. We are required to ask them to comply with federal lending laws that prohibit creditors from discrimination against applicants. Answering the questions is optional but encouraged.\n\n" +
-        "Let\u2019s start with ethnicity, race, or gender \u2014 and we can select more than one category.",
-      coach:
-        "Government monitoring (HMDA) \u2014 see AMP. Voluntary but encouraged. Ethnicity: if Hispanic, what origin(s)? Gender: what would you like me to select? Race: what would you like me to select \u2014 we can do more than one.",
-      fields: [
-        ["demoEthnicity", "Ethnicity", "select", "Hispanic or Latino|Not Hispanic or Latino|I do not wish to provide"],
-        ["demoEthnicitySub", "If Hispanic or Latino — origin", "select", "Mexican|Puerto Rican|Cuban|Other Hispanic or Latino"],
-        ["demoEthnicityOtherOrigin", "If other Hispanic/Latino — specify origin"],
-        ["demoRace", "Race (select all that apply — note extras below)", "select", "American Indian or Alaska Native|Asian|Black or African American|Native Hawaiian or Other Pacific Islander|White|I do not wish to provide"],
-        ["demoRaceAmIndianTribe", "If American Indian/Alaska Native — enrolled or principal tribe"],
-        ["demoRaceAsianSub", "If Asian — subcategory", "select", "Asian Indian|Chinese|Filipino|Japanese|Korean|Vietnamese|Other Asian"],
-        ["demoRacePacificSub", "If Pacific Islander — subcategory", "select", "Native Hawaiian|Guamanian or Chamorro|Samoan|Other Pacific Islander"],
-        ["demoRaceDetail", "Additional race selections / other detail", "textarea"],
-        ["demoSex", "Sex / Gender", "select", "Female|Male|I do not wish to provide"],
-        ["demoCollectionMethod", "How Collected", "select", "Face-to-Face|Telephone|Fax or Mail|Email or Internet"]
-      ],
-      routes: [["Continue", "jump:11"]]
-    },
-    {
-      title: "1003 \u2014 Property Condition",
-      script:
-        "A few property-condition questions for the appraisal. Any \u201cyes\u201d here means we dig deeper, ask more, and check Pathfinder/AMP before moving on.",
-      coach:
-        "Any Y = dig deeper, ask more questions, check Pathfinder. AMP surfaces the warning and the required action based on the client\u2019s response. Use AMP!",
-      fields: [
-        ["pcOver20Acres", "Is the property size greater than 20 acres?", "select", "No|Yes"],
-        ["pcCommercialUse", "Is the property set up for business/commercial use?", "select", "No|Yes"],
-        ["pcHandrails", "FHA/USDA/VA: Any missing/broken/unsecured handrails (incl. deck)?", "select", "No|Yes"],
-        ["pcFoundation", "Foundation sinking/cracked/uneven/crumbling/unsound?", "select", "No|Yes"],
-        ["pcElectrical", "Exposed electric wire / missing switch plates?", "select", "No|Yes"],
-        ["pcWindowsDoors", "Broken/damaged/missing windows or doors (home/garage)?", "select", "No|Yes"],
-        ["pcWoodSiding", "Decaying/rotting wood or missing siding?", "select", "No|Yes"],
-        ["pcWaterStains", "Any visible water stains / standing water?", "select", "No|Yes"],
-        ["pcSubfloor", "Any exposed subfloor in the home?", "select", "No|Yes"],
-        ["pcUnfinished", "Anything unfinished / under renovation / in a temp state?", "select", "No|Yes"],
-        ["pcIncomeFromProperty", "Any income/loss derived from the property?", "select", "No|Yes"],
-        ["pcPeelingPaint", "FHA/VA/USDA: Any chipped/peeling paint on home/deck/garage?", "select", "No|Yes"],
-        ["pcRoofLeaks", "Any active leaks in roof / missing shingles?", "select", "No|Yes"],
-        ["pcSolarPanels", "Does the property have solar panels?", "select", "No|Yes"],
-        ["pcAppraiserAccess", "All rooms/outbuildings accessible to appraiser (crawl space & attic)?", "select", "Yes|No"],
-        ["pcListedForSale", "Is the home currently listed for sale?", "select", "No|Yes"],
-        ["pcUtilitiesOn", "FHA/VA: Are the utilities on and fully functioning?", "select", "Yes|No"],
-        ["pcConditionNotes", "Property condition notes / dig-deeper details", "textarea"]
-      ],
-      routes: [["Continue", "jump:12"]]
-    },
-    {
-      title: "1003 \u2014 Condo Questions (if applicable)",
-      script:
-        "If the subject is a condo, a few extra questions. A \u201cyes\u201d on these can mean financing may not be available \u2014 foreshadow that a condo questionnaire may be required, and always check Pathfinder.",
-      coach:
-        "Condo-specific: if Yes, financing potentially not available (see Pathfinder). Foreshadow the condo questionnaire. Always check Pathfinder!",
-      fields: [
-        ["pcCondoBuilderControl", "Is the association still under the builder/developer\u2019s control?", "select", "No|Yes"],
-        ["pcCondoUnder5Units", "Are there fewer than 5 units in the complex?", "select", "No|Yes"],
-        ["pcCondoInvestor49", "Are 49% or more units held as investment properties?", "select", "No|Yes"],
-        ["pcHoaContact", "HOA contact information", "textarea"]
-      ],
-      routes: [["Continue", "jump:13"]]
-    },
-    {
       title: "1003 \u2014 Loan Originator",
       script:
-        "That completes your application \u2014 great job, this is a big step. Let me confirm my information as your loan officer, and then we\u2019ll get everything submitted and moving.",
+        "That completes the application data \u2014 great job. Let me confirm my information as your loan officer, then we\u2019ll run the standard declarations, monitoring, and property-condition questions.",
       fields: [
         ["loName", "Loan Originator Name"],
         ["loNmls", "LO NMLS ID"],
@@ -1038,7 +959,7 @@ export const flow: Flow = {
         ["loEmail", "LO Email"],
         ["loStateLicense", "LO State License #"]
       ],
-      routes: [["Save & go to export", "export"]]
+      routes: [["Continue to declarations", "declarations"]]
     }
   ]
 };
