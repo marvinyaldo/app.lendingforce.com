@@ -44,9 +44,17 @@ export type FieldDef =
  */
 export type RouteDef = [label: string, action: string];
 
+/** An alternate script the LO can switch to via tabs on a question. */
+export interface ScriptVariant {
+  label: string;
+  script: string;
+}
+
 export interface Question {
   title: string;
   script: string;
+  /** Optional tabbed script options; when present, tabs show at the top of the step. */
+  variants?: ScriptVariant[];
   coach?: string;
   fields?: FieldDef[];
   routes?: RouteDef[];

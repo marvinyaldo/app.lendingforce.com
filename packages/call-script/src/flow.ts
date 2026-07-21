@@ -23,8 +23,24 @@ export const flow: Flow = {
         "Hello {{borrowerFirstName}}, this is {{loName}} with Lending Force.\n\n" +
         "I know your time is valuable, so I\u2019ll keep this direct. We received your information and wanted to connect to take a fresh look at your mortgage options.\n\n" +
         "The goal today is simple: I\u2019ll ask a few questions, understand what you\u2019re trying to accomplish, and see whether there is a real financial benefit. If there is, I\u2019ll make the next steps easy. If there is not, I\u2019ll tell you that too. Fair enough?",
+      variants: [
+        {
+          label: "Option 1",
+          script:
+            "Hello {{borrowerFirstName}}, this is {{loName}} with Lending Force.\n\n" +
+            "I know your time is valuable, so I\u2019ll keep this direct. We received your information and wanted to connect to take a fresh look at your mortgage options.\n\n" +
+            "The goal today is simple: I\u2019ll ask a few questions, understand what you\u2019re trying to accomplish, and see whether there is a real financial benefit. If there is, I\u2019ll make the next steps easy. If there is not, I\u2019ll tell you that too. Fair enough?"
+        },
+        {
+          label: "Option 2",
+          script:
+            "Hello {{borrowerFirstName}}, this is {{loName}} with Lending Force.\n\n" +
+            "I\u2019m reaching out because we received your information regarding your mortgage options. I\u2019d like to learn a little more about your current situation and what you would ideally like to improve.\n\n" +
+            "What would benefit you most \u2014 lowering your payment or taking cash out?"
+        }
+      ],
       coach:
-        "Use this opener when you are calling the lead. On agreement, jump to the shared \u201cConfirm contact information\u201d step \u2014 same one the inbound path lands on.",
+        "Use this opener when you are calling the lead. Two openers to choose from \u2014 use the Option 1 / Option 2 tabs. On agreement, jump to the shared \u201cConfirm contact information\u201d step \u2014 same one the inbound path lands on.",
       fields: [
         ["loName", "LO Name"],
         ["borrowerFirstName", "Borrower First Name"],

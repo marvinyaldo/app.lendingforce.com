@@ -588,6 +588,19 @@ hr {
   color: var(--ink);
 }
 
+/* ---- Script variant tabs (e.g. outbound Option 1 / Option 2) ---- */
+.variant-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 12px;
+  flex-wrap: wrap;
+}
+.variant-tabs button {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 /* ---- Recent applications (last 2) ---- */
 .saved-app {
   display: flex;

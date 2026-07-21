@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { flow, labelSection, sectionOrder } from "@lf/call-script";
 import type { CallData, CallState } from "@lf/types";
 import { Fields } from "./Fields.js";
@@ -28,6 +29,13 @@ export function GuidedScreen({
   const q = arr[state.index] ?? arr[0]!;
   const progress = Math.round(((state.index + 1) / arr.length) * 100);
 
+  // Which script variant tab is active (reset when the step changes).
+  const [variantIdx, setVariantIdx] = useState(0);
+  useEffect(() => setVariantIdx(0), [state.section, state.index]);
+  const variants = q.variants;
+  const scriptText =
+    variants && variants[variantIdx] ? variants[variantIdx]!.script : q.script;
+
   return (
     <section>
       <div className="card">
@@ -45,7 +53,21 @@ export function GuidedScreen({
       </div>
       <div className="question-card">
         <h2>{q.title}</h2>
-        <div className="script">{fillTemplate(q.script, data)}</div>
+        {variants && (
+          <div className="variant-tabs">
+            {variants.map((v, i) => (
+              <button
+                key={v.label}
+                type="button"
+                className={i === variantIdx ? "primary" : ""}
+                onClick={() => setVariantIdx(i)}
+              >
+                {v.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="script">{fillTemplate(scriptText, data)}</div>
         {q.coach && <div className="coach">{q.coach}</div>}
         <div style={{ marginTop: 16 }}>
           <Fields fields={q.fields ?? []} data={data} setField={setField} />
