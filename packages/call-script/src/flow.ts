@@ -3,9 +3,9 @@ import type { Flow } from "@lf/types";
 export const flow: Flow = {
   intro: [
     {
-      title: "How is the call starting?",
+      title: "Outbound or inbound?",
       script:
-        "Pick the path that matches this call. Both paths capture the same borrower and contact info and both feed the same 1003 \u2014 the only thing that changes is the opener you read.",
+        "Pick the opener for this call. Both feed the same 1003.",
       coach:
         "Outbound = you\u2019re calling the lead first. Inbound callback = the borrower is returning a call from our mortgage team. Either way, after the opener you\u2019ll confirm contact info, capture household, and continue into discovery. Everything you capture from here flows into the 1003 walk-through at the end.",
       fields: [
@@ -13,8 +13,8 @@ export const flow: Flow = {
         ["callDirection", "Call Direction", "select", "Outbound (we're calling out)|Inbound Callback (they called us)"]
       ],
       routes: [
-        ["Outbound \u2014 we\u2019re calling out", "set:callDirection=Outbound;jump:1"],
-        ["Inbound callback \u2014 they called us", "set:callDirection=Inbound Callback;jump:2"]
+        ["Outbound", "set:callDirection=Outbound;jump:1"],
+        ["Inbound", "set:callDirection=Inbound Callback;jump:2"]
       ]
     },
     {
