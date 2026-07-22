@@ -4,14 +4,7 @@ export const flow: Flow = {
   intro: [
     {
       title: "Outbound or inbound?",
-      script:
-        "Pick the opener for this call. Both feed the same 1003.",
-      coach:
-        "Outbound = you\u2019re calling the lead first. Inbound callback = the borrower is returning a call from our mortgage team. Either way, after the opener you\u2019ll confirm contact info, capture household, and continue into discovery. Everything you capture from here flows into the 1003 walk-through at the end.",
-      fields: [
-        ["loName", "LO Name"],
-        ["callDirection", "Call Direction", "select", "Outbound (we're calling out)|Inbound Callback (they called us)"]
-      ],
+      script: "",
       routes: [
         ["Outbound", "set:callDirection=Outbound;jump:1"],
         ["Inbound", "set:callDirection=Inbound Callback;jump:2"]
