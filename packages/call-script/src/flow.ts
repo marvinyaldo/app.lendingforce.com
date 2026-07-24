@@ -7,7 +7,8 @@ export const flow: Flow = {
       script: "",
       routes: [
         ["Outbound", "set:callDirection=Outbound;jump:1"],
-        ["Inbound", "set:callDirection=Inbound Callback;jump:2"]
+        ["Inbound", "set:callDirection=Inbound Callback;jump:2"],
+        ["Transfer", "set:callDirection=Transfer;jump:3"]
       ]
     },
     {
@@ -44,7 +45,7 @@ export const flow: Flow = {
         ["preferredPhone", "Preferred Phone"]
       ],
       routes: [
-        ["Client agrees", "jump:3"],
+        ["Client agrees", "jump:5"],
         ["Not interested", "rebuttal:notInterested"],
         ["Busy", "rebuttal:busy"],
         ["Send info", "rebuttal:sendInfo"],
@@ -82,11 +83,65 @@ export const flow: Flow = {
         ["callbackRecordFound", "Record Found?", "select", "Yes|No"]
       ],
       routes: [
-        ["Confirmed the property \u2014 continue", "jump:3"],
-        ["Record not found \u2014 collected info, continue", "jump:3"],
+        ["Confirmed the property \u2014 continue", "jump:5"],
+        ["Record not found \u2014 collected info, continue", "jump:5"],
         ["Not the right person / wrong number", "rebuttal:oldInquiry"],
         ["Busy \u2014 asked us to call back", "rebuttal:busy"]
       ]
+    },
+    {
+      title: "Transfer opener (warm transfer)",
+      script:
+        "[Warm transfer — the telemarketer is bringing the client onto the line.]\n\n" +
+        "You: “{{loName}} speaking.”\n" +
+        "Telemarketer: “Hi {{loName}}, I have {{borrowerFirstName}} on the line.”\n\n" +
+        "You: “Hi {{borrowerFirstName}}. Again, my name is {{loName}}, and I’m a licensed loan officer here with Lending Force. I hope you’re doing well today. I’ll have you fill me in on what you’re looking to accomplish — are you primarily looking to take cash out, lower your monthly payment, or a little bit of both?”",
+      variants: [
+        {
+          label: "Standard",
+          script:
+            "You: “{{loName}} speaking.”\n" +
+            "Telemarketer: “Hi {{loName}}, I have {{borrowerFirstName}} on the line.”\n\n" +
+            "You: “Hi {{borrowerFirstName}}. Again, my name is {{loName}}, and I’m a licensed loan officer here with Lending Force. I hope you’re doing well today. I’ll have you fill me in on what you’re looking to accomplish — are you primarily looking to take cash out, lower your monthly payment, or a little bit of both?”"
+        },
+        {
+          label: "Conversational",
+          script:
+            "You: “{{loName}} speaking.”\n" +
+            "Telemarketer: “Hi {{loName}}, I have {{borrowerFirstName}} on the line.”\n\n" +
+            "You: “Hi {{borrowerFirstName}}. Again, this is {{loName}}. I’m a licensed loan officer here with Lending Force. I hope you’re doing well today. Just fill me in on what you’re hoping to accomplish — are you looking to access some cash, lower your monthly payments, or possibly both?”"
+        }
+      ],
+      coach:
+        "Warm transfer from the telemarketer. If they already handed you the goal, tap “Client stated a goal” to acknowledge it and dig in. If not, ask the open question and tap “No goal — I asked.”",
+      fields: [
+        ["loName", "LO Name"],
+        ["borrowerFirstName", "Borrower First Name"],
+        ["borrowerLastName", "Borrower Last Name"],
+        ["borrowerFullName", "Borrower Full Name"],
+        ["preferredPhone", "Preferred Phone"],
+        ["primaryGoal", "Stated Goal (if any)", "select", "Cash out|Lower payment|Both|Not sure"]
+      ],
+      routes: [
+        ["Client stated a goal", "jump:4"],
+        ["No goal — I asked", "jump:5"],
+        ["Not interested", "rebuttal:notInterested"],
+        ["Busy", "rebuttal:busy"]
+      ]
+    },
+    {
+      title: "Transfer — client already stated a goal",
+      script:
+        "“Perfect, thank you. Hi {{borrowerFirstName}}. Again, my name is {{loName}}, and I’m a licensed loan officer here with Lending Force. I hope you’re doing well today.”\n\n" +
+        "If cash out: “I understand you’re interested in taking some cash out of the property. What are you hoping to use the funds for?”\n\n" +
+        "If lowering the payment: “I understand you’re interested in lowering your monthly payment. Is the main goal to create more room in your monthly budget, or are there other debts or expenses you’re hoping to address as well?”",
+      coach:
+        "The telemarketer already gave you the goal — acknowledge it and dig into the why before moving to contact info.",
+      fields: [
+        ["primaryGoal", "Stated Goal", "select", "Cash out|Lower payment|Both|Not sure"],
+        ["financialGoal", "What they want to accomplish", "textarea"]
+      ],
+      routes: [["Continue", "jump:5"]]
     },
     {
       title: "Confirm contact information",
@@ -113,7 +168,7 @@ export const flow: Flow = {
         ["currentHousingPayment", "Monthly Housing Payment"],
         ["mailingAddress", "Mailing Address (if different)", "textarea"]
       ],
-      routes: [["Continue", "jump:4"]]
+      routes: [["Continue", "jump:6"]]
     },
     {
       title: "Household & co-borrower",
