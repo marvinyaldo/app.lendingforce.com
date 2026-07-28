@@ -298,7 +298,7 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
             t("MortgageType", mortgageType(data.productType)) +
             n("NoteRatePercent", data.interestRate)
         ),
-      `LoanRoleType="SubjectLoan"`
+      `xlink:label="Loan_Subject" LoanRoleType="SubjectLoan"`
     )
   );
 
@@ -431,11 +431,18 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
       )
     : "";
 
+  // Always emit a BORROWER element so the party reads as a real borrower, and
+  // carry an xlink label so it can be linked to the loan as the primary borrower.
+  const borrowerBlock = borrower || "<BORROWER><BORROWER_DETAIL/></BORROWER>";
   const borrowerParty = wrap(
     "PARTY",
     wrap("INDIVIDUAL", borrowerContact + borrowerName) +
-      wrap("ROLES", wrap("ROLE", borrower + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))) +
-      borrowerTaxIds
+      wrap(
+        "ROLES",
+        wrap("ROLE", borrowerBlock + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))
+      ) +
+      borrowerTaxIds,
+    `xlink:label="Party_Borrower1" SequenceNumber="1"`
   );
 
   // --- CO-BORROWER PARTY (optional) ---
@@ -468,9 +475,14 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
       wrap("INDIVIDUAL", cContact + nameNode(cName.first, cName.middle, cName.last, data.coBorrowerName)) +
         wrap(
           "ROLES",
-          wrap("ROLE", wrap("BORROWER", cDetail) + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))
+          wrap(
+            "ROLE",
+            wrap("BORROWER", cDetail || "<BORROWER_DETAIL/>") +
+              wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower"))
+          )
         ) +
-        cTaxIds
+        cTaxIds,
+      `xlink:label="Party_Borrower2" SequenceNumber="2"`
     );
   }
 
@@ -546,7 +558,17 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
   // Custom Lending Force extension removed for Arive import compatibility.
   const extension = "";
 
-  const deal = `<DEAL>${assets}${collaterals}${liabilities}${loans}${parties}${extension}</DEAL>`;
+  // Link the borrower(s) to the subject loan so the importer can identify the
+  // primary borrower (ULAD-style xlink relationships).
+  const relationships = wrap(
+    "RELATIONSHIPS",
+    `<RELATIONSHIP SequenceNumber="1" xlink:from="Party_Borrower1" xlink:to="Loan_Subject"/>` +
+      (coBorrowerParty
+        ? `<RELATIONSHIP SequenceNumber="2" xlink:from="Party_Borrower2" xlink:to="Loan_Subject"/>`
+        : "")
+  );
+
+  const deal = `<DEAL>${assets}${collaterals}${liabilities}${loans}${parties}${relationships}${extension}</DEAL>`;
 
   return (
     `<?xml version="1.0" encoding="UTF-8"?>` +
