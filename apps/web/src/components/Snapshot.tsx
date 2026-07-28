@@ -1,4 +1,3 @@
-import { download, toJSON, toMISMO } from "@lf/exporters";
 import type { CallData } from "@lf/types";
 import type { SavedApp } from "../hooks/useCallStore.js";
 
@@ -77,28 +76,6 @@ export function Snapshot({
         Save Progress
       </button>{" "}
       <button onClick={onLoad}>Load Saved</button>
-      <hr />
-      <p className="section-title">Download This Client</p>
-      <p className="small muted">
-        Grab the current call data anytime — nothing is lost.
-      </p>
-      <button
-        type="button"
-        onClick={() =>
-          download("lending-force-call-data.json", toJSON(data), "application/json")
-        }
-      >
-        Download JSON
-      </button>{" "}
-      <button
-        type="button"
-        className="warning"
-        onClick={() =>
-          download("lending-force-mismo-3.4.xml", toMISMO(data), "application/xml")
-        }
-      >
-        Download MISMO 3.4 (Arive)
-      </button>
       <hr />
       <p className="section-title">Recent Applications (last 2)</p>
       <button type="button" onClick={onSaveApp}>
