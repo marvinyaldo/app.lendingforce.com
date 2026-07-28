@@ -38,6 +38,14 @@ function boolIndicator(tag: string, value: unknown): string {
   return "";
 }
 
+/** Yes/No-typed declaration element (e.g. IntentToOccupyType). */
+function yesNoType(tag: string, value: unknown): string {
+  const s = String(value ?? "").trim().toLowerCase();
+  if (["yes", "y", "true", "1"].includes(s)) return `<${tag}>Yes</${tag}>`;
+  if (["no", "n", "false", "0"].includes(s)) return `<${tag}>No</${tag}>`;
+  return "";
+}
+
 function pad(x: string): string {
   return x.padStart(2, "0");
 }
@@ -322,15 +330,9 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
   const borrowerDetail = wrap(
     "BORROWER_DETAIL",
     (bDob ? `<BorrowerBirthDate>${bDob}</BorrowerBirthDate>` : "") +
+      "<BorrowerClassificationType>Primary</BorrowerClassificationType>" +
       n("DependentCount", data.borrowerDependentsCount) +
       t("MaritalStatusType", maritalType(data.borrowerMaritalStatus))
-  );
-  const borrowerCitizenship = wrap(
-    "CITIZENSHIP_RESIDENCY_TYPES",
-    wrap(
-      "CITIZENSHIP_RESIDENCY_TYPE",
-      t("CitizenshipResidencyType", citizenshipType(data.borrowerCitizenship))
-    )
   );
   const borrowerIncome = wrap(
     "CURRENT_INCOME",
@@ -390,18 +392,20 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
   );
   const borrowerResidences = wrap("RESIDENCES", currentResidence);
 
-  // Declarations (well-established ULAD indicators).
+  // Declarations — element names/order match the Arive/DU MISMO export.
   const declarationDetail = wrap(
     "DECLARATION_DETAIL",
     boolIndicator("BankruptcyIndicator", data.declDeclaredBankruptcy) +
-      boolIndicator("HomeownerPastThreeYearsIndicator", data.declOwnershipInterest) +
-      boolIndicator("IntentToOccupyIndicator", data.declOccupyPrimary) +
+      t("CitizenshipResidencyType", citizenshipType(data.borrowerCitizenship)) +
+      yesNoType("HomeownerPastThreeYearsType", data.declOwnershipInterest) +
+      yesNoType("IntentToOccupyType", data.declOccupyPrimary) +
       boolIndicator("OutstandingJudgmentsIndicator", data.declOutstandingJudgments) +
       boolIndicator("PartyToLawsuitIndicator", data.declPartyToLawsuit) +
       boolIndicator("PresentlyDelinquentIndicator", data.declDelinquentFederalDebt) +
       boolIndicator("PriorPropertyDeedInLieuConveyedIndicator", data.declConveyedTitleInLieu) +
       boolIndicator("PriorPropertyForeclosureCompletedIndicator", data.declPropertyForeclosed) +
       boolIndicator("PriorPropertyShortSaleCompletedIndicator", data.declPreForeclosureShortSale) +
+      boolIndicator("PropertyProposedCleanEnergyLienIndicator", data.declSubjectToLien) +
       boolIndicator("UndisclosedBorrowedFundsIndicator", data.declBorrowingMoney) +
       boolIndicator("UndisclosedComakerOfNoteIndicator", data.declCoSigner) +
       boolIndicator("UndisclosedCreditApplicationIndicator", data.declNewCredit) +
@@ -409,14 +413,11 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
   );
   const declaration = wrap("DECLARATION", declarationDetail);
 
+  // BORROWER child order matches MISMO: DETAIL, CURRENT_INCOME, DECLARATION,
+  // EMPLOYERS, RESIDENCES. (Citizenship is carried inside DECLARATION_DETAIL.)
   const borrower = wrap(
     "BORROWER",
-    borrowerDetail +
-      borrowerCitizenship +
-      borrowerIncome +
-      declaration +
-      employers +
-      borrowerResidences
+    borrowerDetail + borrowerIncome + declaration + employers + borrowerResidences
   );
 
   const borrowerSsn = num(data.borrowerSsn);
@@ -439,10 +440,14 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
     wrap("INDIVIDUAL", borrowerContact + borrowerName) +
       wrap(
         "ROLES",
-        wrap("ROLE", borrowerBlock + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")))
+        wrap(
+          "ROLE",
+          borrowerBlock + wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")),
+          `SequenceNumber="1" xlink:label="BORROWER_1"`
+        )
       ) +
       borrowerTaxIds,
-    `xlink:label="Party_Borrower1" SequenceNumber="1"`
+    `SequenceNumber="1"`
   );
 
   // --- CO-BORROWER PARTY (optional) ---
@@ -457,6 +462,7 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
     const cDetail = wrap(
       "BORROWER_DETAIL",
       (cDob ? `<BorrowerBirthDate>${cDob}</BorrowerBirthDate>` : "") +
+        "<BorrowerClassificationType>Secondary</BorrowerClassificationType>" +
         t("MaritalStatusType", maritalType(data.coBorrowerMaritalStatus))
     );
     const cSsn = num(data.coBorrowerSsn);
@@ -478,11 +484,12 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
           wrap(
             "ROLE",
             wrap("BORROWER", cDetail || "<BORROWER_DETAIL/>") +
-              wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower"))
+              wrap("ROLE_DETAIL", t("PartyRoleType", "Borrower")),
+            `SequenceNumber="1" xlink:label="BORROWER_2"`
           )
         ) +
         cTaxIds,
-      `xlink:label="Party_Borrower2" SequenceNumber="2"`
+      `SequenceNumber="2"`
     );
   }
 
@@ -555,32 +562,23 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
 
   const parties = wrap("PARTIES", borrowerParty + coBorrowerParty + loParty + orgParty);
 
-  // Custom Lending Force extension removed for Arive import compatibility.
-  const extension = "";
-
-  // Link the borrower(s) to the subject loan so the importer can identify the
-  // primary borrower (ULAD-style xlink relationships).
-  const relationships = wrap(
-    "RELATIONSHIPS",
-    `<RELATIONSHIP SequenceNumber="1" xlink:from="Party_Borrower1" xlink:to="Loan_Subject"/>` +
-      (coBorrowerParty
-        ? `<RELATIONSHIP SequenceNumber="2" xlink:from="Party_Borrower2" xlink:to="Loan_Subject"/>`
-        : "")
-  );
-
-  const deal = `<DEAL>${assets}${collaterals}${liabilities}${loans}${parties}${relationships}${extension}</DEAL>`;
+  // The primary/secondary borrower is designated on BORROWER_DETAIL
+  // (BorrowerClassificationType), matching how Arive/DU export identifies them,
+  // so no borrower<->loan relationships are needed here.
+  const deal = `<DEAL>${assets}${collaterals}${liabilities}${loans}${parties}</DEAL>`;
 
   return (
     `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<MESSAGE xmlns="http://www.mismo.org/residential/2009/schemas" ` +
-    `xmlns:xlink="http://www.w3.org/1999/xlink" MISMOReferenceModelIdentifier="3.4.0">` +
+    `<MESSAGE MISMOReferenceModelIdentifier="3.4.032420160128" ` +
+    `xmlns="http://www.mismo.org/residential/2009/schemas" ` +
+    `xmlns:DU="http://www.datamodelextension.org/Schema/DU" ` +
+    `xmlns:ULAD="http://www.datamodelextension.org/Schema/ULAD" ` +
+    `xmlns:xlink="http://www.w3.org/1999/xlink" ` +
+    `xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+    `xsi:schemaLocation="http://www.mismo.org/residential/2009/schemas DU_Wrapper_3.4.0_B324.xsd">` +
     wrap(
       "ABOUT_VERSIONS",
-      wrap(
-        "ABOUT_VERSION",
-        `<CreatedDatetime>${xml(createdAt)}</CreatedDatetime>` +
-          t("DataVersionIdentifier", "3.4.032420160128")
-      )
+      wrap("ABOUT_VERSION", `<CreatedDatetime>${xml(createdAt)}</CreatedDatetime>`)
     ) +
     `<DEAL_SETS><DEAL_SET><DEALS>${deal}</DEALS></DEAL_SET></DEAL_SETS>` +
     `</MESSAGE>`
