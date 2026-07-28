@@ -160,23 +160,44 @@ export function useCallStore(): UseCallStore {
     typeof window !== "undefined" ? readSavedApps() : []
   );
 
+  // Keep a ref to the freshest data/state so we can flush on page hide.
+  const liveRef = useRef<PersistShape>({ data, state });
+  liveRef.current = { data, state };
+
+  const flushSave = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(liveRef.current));
+    } catch {
+      /* quota or privacy mode — ignore */
+    }
+  }, []);
+
   // Auto-save: debounce writes so rapid typing doesn't thrash localStorage.
   const saveTimer = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      try {
-        const payload: PersistShape = { data, state };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-      } catch {
-        /* quota or privacy mode — ignore */
-      }
-    }, 250);
+    saveTimer.current = window.setTimeout(flushSave, 250);
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
     };
-  }, [data, state]);
+  }, [data, state, flushSave]);
+
+  // Never lose in-progress data: flush synchronously if the page is hidden or
+  // closed before the debounce fires (tab close, refresh, navigation away).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onHide = () => flushSave();
+    window.addEventListener("beforeunload", onHide);
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("beforeunload", onHide);
+      window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onHide);
+    };
+  }, [flushSave]);
 
   // Persist the personal brand to its own key whenever any brand field changes.
   useEffect(() => {

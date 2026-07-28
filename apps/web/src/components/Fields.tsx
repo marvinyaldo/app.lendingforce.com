@@ -26,18 +26,27 @@ export function Fields({ fields, data, setField }: FieldsProps) {
                 onChange={(e) => setField(key, e.target.value)}
               />
             ) : type === "select" ? (
-              <select
-                id={`f-${key}`}
-                value={value}
-                onChange={(e) => setField(key, e.target.value)}
-              >
-                <option value="" />
-                {(opts ?? "").split("|").map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </select>
+              (() => {
+                const options = (opts ?? "").split("|");
+                // Preserve a previously-captured value that isn't in this
+                // step's option list instead of blanking it out.
+                const showExtra = value !== "" && !options.includes(value);
+                return (
+                  <select
+                    id={`f-${key}`}
+                    value={value}
+                    onChange={(e) => setField(key, e.target.value)}
+                  >
+                    <option value="" />
+                    {options.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                    {showExtra && <option value={value}>{value}</option>}
+                  </select>
+                );
+              })()
             ) : (
               <input
                 id={`f-${key}`}

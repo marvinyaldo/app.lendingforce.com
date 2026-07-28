@@ -10,6 +10,15 @@ export function download(filename: string, content: string, type: string): void 
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  // The anchor must be in the DOM for some browsers, and the object URL must
+  // stay alive until the download starts — revoking immediately can cancel it
+  // (especially for larger files like the MISMO XML).
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 1500);
 }
