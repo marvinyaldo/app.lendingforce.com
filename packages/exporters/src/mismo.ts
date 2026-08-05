@@ -293,20 +293,36 @@ export function toMISMO(data: CallData, createdAt: string = new Date().toISOStri
 
   // --- LOANS ---
   const cashOut = isCashOut(data.loanPurpose);
+  // Arive reads LoanPurposeType from TERMS_OF_LOAN, which must always exist.
+  // This tool is refinance-focused, so default the purpose to Refinance.
+  const loanPurposeType = purposeType(data.loanPurpose) || "Refinance";
+  const loanMortgageType = mortgageType(data.productType) || "Conventional";
+  const amortization = data.loanTermMonths
+    ? wrap(
+        "AMORTIZATION",
+        wrap(
+          "AMORTIZATION_RULE",
+          "<AmortizationType>Fixed</AmortizationType>" +
+            n("LoanAmortizationPeriodCount", data.loanTermMonths) +
+            "<LoanAmortizationPeriodType>Month</LoanAmortizationPeriodType>"
+        )
+      )
+    : "";
   const loans = wrap(
     "LOANS",
     wrap(
       "LOAN",
-      wrap("LOAN_PURPOSE", t("LoanPurposeType", purposeType(data.loanPurpose))) +
+      amortization +
         (cashOut ? wrap("REFINANCE", t("RefinanceCashOutDeterminationType", "CashOut")) : "") +
         wrap(
           "TERMS_OF_LOAN",
           n("BaseLoanAmount", data.loanAmount) +
-            n("LoanAmortizationPeriodCount", data.loanTermMonths) +
-            t("MortgageType", mortgageType(data.productType)) +
-            n("NoteRatePercent", data.interestRate)
+            "<LienPriorityType>FirstLien</LienPriorityType>" +
+            `<LoanPurposeType>${loanPurposeType}</LoanPurposeType>` +
+            `<MortgageType>${loanMortgageType}</MortgageType>` +
+            n("NoteAmount", data.loanAmount)
         ),
-      `xlink:label="Loan_Subject" LoanRoleType="SubjectLoan"`
+      `LoanRoleType="SubjectLoan" xlink:label="LOAN_1" SequenceNumber="1"`
     )
   );
 
