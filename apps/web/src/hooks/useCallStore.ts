@@ -34,9 +34,9 @@ interface PersistShape {
   state: CallState;
 }
 
-// ---- Saved applications: keeps ONLY the two most recent apps on this device. ----
+// ---- Saved applications: keeps ONLY the five most recent apps on this device. ----
 const SAVED_APPS_KEY = "lfSavedAppsV1";
-const MAX_SAVED_APPS = 2;
+const MAX_SAVED_APPS = 5;
 
 export interface SavedApp {
   id: string;
@@ -214,7 +214,7 @@ export function useCallStore(): UseCallStore {
     setData((d) => ({ ...d, [key]: value }));
   }, []);
 
-  /** Archive the current application; keeps only the two most recent. */
+  /** Archive the current application; keeps only the five most recent. */
   const archiveApp = useCallback(
     (d: CallData, s: CallState): SavedApp[] => {
       const existing = readSavedApps();
@@ -241,7 +241,7 @@ export function useCallStore(): UseCallStore {
       return;
     }
     setSavedApps(archiveApp(data, state));
-    alert("Application saved. (The two most recent are kept.)");
+    alert("Application saved. (The five most recent are kept.)");
   }, [archiveApp, data, state]);
 
   const loadApp = useCallback((id: string) => {
@@ -413,7 +413,7 @@ export function useCallStore(): UseCallStore {
   const clearAll = useCallback(() => {
     if (
       !confirm(
-        "Start a new client? The current application will be saved to Recent Applications (the two most recent are kept), and your personal brand stays."
+        "Start a new client? The current application will be saved to Recent Applications (the five most recent are kept), and your personal brand stays."
       )
     )
       return;

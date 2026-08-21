@@ -77,7 +77,7 @@ export function Snapshot({
       </button>{" "}
       <button onClick={onLoad}>Load Saved</button>
       <hr />
-      <p className="section-title">Recent Applications (last 2)</p>
+      <p className="section-title">Recent Applications (last 5)</p>
       <button type="button" onClick={onSaveApp}>
         Save Current Application
       </button>
