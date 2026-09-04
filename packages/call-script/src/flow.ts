@@ -881,9 +881,30 @@ export const flow: Flow = {
         ["coBorrowerCitizenship", "Co-Borrower Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"]
       ],
       routes: [
-        ["Continue", "jump:3"],
-        ["No co-borrower", "jump:3"]
+        ["Yes — add co-borrower details", "jump:3"],
+        ["No co-borrower", "jump:4"]
       ]
+    },
+    {
+      title: "1003 — Co-Borrower Employment, Income & Assets",
+      script:
+        "Since there's a co-borrower, let's capture their side too — employment, monthly income, and any accounts or assets in their name. It all counts toward qualifying.",
+      coach: "Only shown when a co-borrower is on the loan. Their income and assets are used to qualify.",
+      fields: [
+        ["coBorrowerEmployer", "Co-Borrower Employer / Business"],
+        ["coBorrowerPosition", "Co-Borrower Position / Title"],
+        ["coBorrowerEmploymentType", "Co-Borrower Employment Type", "select", "Salary|Hourly|Commission|Self-Employed|Retired|Other"],
+        ["coBorrowerHireDate", "Co-Borrower Start Date"],
+        ["coBorrowerYearsInLineOfWork", "Co-Borrower Years in This Line of Work"],
+        ["coBorrowerGrossMonthlyIncome", "Co-Borrower Gross Monthly Income"],
+        ["coBorrowerOtherIncome", "Co-Borrower Other Income (monthly)"],
+        ["coBorrowerOtherIncomeSource", "Co-Borrower Other Income Source"],
+        ["coBorrowerCheckingSavings", "Co-Borrower Checking / Savings"],
+        ["coBorrowerRetirementAssets", "Co-Borrower Retirement Assets"],
+        ["coBorrowerOtherAssets", "Co-Borrower Other Assets", "textarea"],
+        ["coBorrowerTotalAssets", "Co-Borrower Total Assets / Reserves"]
+      ],
+      routes: [["Continue", "jump:4"]]
     },
     {
       title: "1003 \u2014 Employment & Income",
@@ -910,7 +931,7 @@ export const flow: Flow = {
         ["incomeOther", "Other Employment Income (monthly)"],
         ["netMonthlyIncome", "Net / Take-Home Monthly"]
       ],
-      routes: [["Continue", "jump:4"]]
+      routes: [["Continue", "jump:5"]]
     },
     {
       title: "1003 \u2014 Additional & Previous Income",
@@ -925,7 +946,7 @@ export const flow: Flow = {
         ["previousEmploymentDates", "Previous Employment Dates"],
         ["previousMonthlyIncome", "Previous Monthly Income"]
       ],
-      routes: [["Continue", "jump:5"]]
+      routes: [["Continue", "jump:6"]]
     },
     {
       title: "1003 \u2014 Assets",
@@ -945,7 +966,7 @@ export const flow: Flow = {
         ["otherAssetsValue", "Other Assets Value"],
         ["totalAssets", "Total Assets / Reserves"]
       ],
-      routes: [["Continue", "jump:6"]]
+      routes: [["Continue", "jump:7"]]
     },
     {
       title: "1003 \u2014 Liabilities",
@@ -969,7 +990,7 @@ export const flow: Flow = {
         ["totalDebtToPayoff", "Total Debt to Pay Off"],
         ["totalPaymentsToPayoff", "Total Monthly Payments"]
       ],
-      routes: [["Continue", "jump:7"]]
+      routes: [["Continue", "jump:8"]]
     },
     {
       title: "1003 \u2014 Real Estate Owned",
@@ -984,7 +1005,7 @@ export const flow: Flow = {
         ["reoMonthlyPayment", "REO Monthly Payment"],
         ["reoRentalIncome", "REO Gross Rental Income (monthly)"]
       ],
-      routes: [["Continue", "jump:8"]]
+      routes: [["Continue", "jump:9"]]
     },
     {
       title: "1003 \u2014 Loan & Property",
@@ -1014,7 +1035,7 @@ export const flow: Flow = {
         ["nonBorrowerOnTitle", "Anyone on title who is NOT on the loan?", "select", "No|Yes"],
         ["nonBorrowerOnTitleName", "Name(s) of non-borrower(s) on title"]
       ],
-      routes: [["Continue", "jump:9"]]
+      routes: [["Continue", "jump:10"]]
     },
     {
       title: "1003 \u2014 Loan Originator",
@@ -1029,7 +1050,7 @@ export const flow: Flow = {
         ["loEmail", "LO Email"],
         ["loStateLicense", "LO State License #"]
       ],
-      routes: [["Continue", "jump:10"]]
+      routes: [["Continue", "jump:11"]]
     },
     {
       title: "1003 — Military Service",
@@ -1039,7 +1060,7 @@ export const flow: Flow = {
         "If yes, the military service questions come up next. If no, we skip straight to the declarations.",
       fields: [["militaryService", "Current or former U.S. military service?", "select", "No|Yes"]],
       routes: [
-        ["Yes — served / serving", "jump:11"],
+        ["Yes — served / serving", "jump:12"],
         ["No", "declarations"]
       ]
     },
