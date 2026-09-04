@@ -8,6 +8,14 @@ interface ExportScreenProps {
   onClear: () => void;
 }
 
+// Never print a full SSN on a saved PDF — mask to the last 4 digits.
+const SSN_KEYS = new Set(["borrowerSsn", "coBorrowerSsn"]);
+function maskForPdf(key: string, value: string): string {
+  if (!SSN_KEYS.has(key)) return value;
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 4 ? `***-**-${digits.slice(-4)}` : "***";
+}
+
 /** Build a clean, labeled HTML summary of the captured call for printing to PDF. */
 function buildSummaryHtml(data: CallData): string {
   const seen = new Set<string>();
@@ -23,7 +31,7 @@ function buildSummaryHtml(data: CallData): string {
         if (val) {
           seen.add(key);
           rows.push(
-            `<tr><th>${esc(label)}</th><td>${esc(val).replace(/\n/g, "<br>")}</td></tr>`
+            `<tr><th>${esc(label)}</th><td>${esc(maskForPdf(key, val)).replace(/\n/g, "<br>")}</td></tr>`
           );
         }
       }

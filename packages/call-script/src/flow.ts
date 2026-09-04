@@ -178,7 +178,7 @@ export const flow: Flow = {
       coach:
         "Captures the 1003 household + citizenship info and flags a co-borrower early so you can gather their details as you go.",
       fields: [
-        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Separated|Unmarried"],
+        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Unmarried|Divorced|Separated|Widowed"],
         ["borrowerDependentsCount", "Number of Dependents"],
         ["borrowerDependentsAges", "Dependents' Ages"],
         ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
@@ -187,7 +187,7 @@ export const flow: Flow = {
         ["coBorrowerSsn", "Co-Borrower SSN"],
         ["coBorrowerPhone", "Co-Borrower Phone"],
         ["coBorrowerEmail", "Co-Borrower Email"],
-        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Separated|Unmarried"]
+        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Unmarried|Divorced|Separated|Widowed"]
       ],
       routes: [["Continue", "brand"]]
     }
@@ -834,7 +834,7 @@ export const flow: Flow = {
         ["borrowerSsn", "Social Security Number"],
         ["borrowerDob", "Date of Birth"],
         ["borrowerCitizenship", "Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"],
-        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Separated|Unmarried"],
+        ["borrowerMaritalStatus", "Marital Status", "select", "Married|Unmarried|Divorced|Separated|Widowed"],
         ["borrowerDependentsCount", "Number of Dependents"],
         ["borrowerDependentsAges", "Dependents' Ages"],
         ["borrowerCellPhone", "Cell Phone"],
@@ -871,11 +871,14 @@ export const flow: Flow = {
         "If so, I\u2019ll grab their information the same way. If it\u2019s just you, we\u2019ll keep moving.",
       fields: [
         ["coBorrowerName", "Co-Borrower Full Name"],
+        ["coBorrowerFirstName", "Co-Borrower First Name"],
+        ["coBorrowerLastName", "Co-Borrower Last Name"],
         ["coBorrowerSsn", "Co-Borrower SSN"],
         ["coBorrowerDob", "Co-Borrower Date of Birth"],
         ["coBorrowerEmail", "Co-Borrower Email"],
         ["coBorrowerPhone", "Co-Borrower Phone"],
-        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Separated|Unmarried"]
+        ["coBorrowerMaritalStatus", "Co-Borrower Marital Status", "select", "Married|Unmarried|Divorced|Separated|Widowed"],
+        ["coBorrowerCitizenship", "Co-Borrower Citizenship", "select", "US Citizen|Permanent Resident|Non-Permanent Resident"]
       ],
       routes: [
         ["Continue", "jump:3"],
@@ -1006,7 +1009,10 @@ export const flow: Flow = {
         ["purchasePrice", "Purchase Price (if purchase)"],
         ["downPayment", "Down Payment"],
         ["newPayment", "Proposed Monthly Payment"],
-        ["mixedUse", "Mixed-Use Property?", "select", "No|Yes"]
+        ["mixedUse", "Mixed-Use Property?", "select", "No|Yes"],
+        ["titleMannerHeld", "How will title be held?", "select", "Sole Ownership|Joint Tenants|Tenants in Common|Community Property|Other"],
+        ["nonBorrowerOnTitle", "Anyone on title who is NOT on the loan?", "select", "No|Yes"],
+        ["nonBorrowerOnTitleName", "Name(s) of non-borrower(s) on title"]
       ],
       routes: [["Continue", "jump:9"]]
     },
@@ -1022,6 +1028,30 @@ export const flow: Flow = {
         ["loPhone", "LO Phone"],
         ["loEmail", "LO Email"],
         ["loStateLicense", "LO State License #"]
+      ],
+      routes: [["Continue", "jump:10"]]
+    },
+    {
+      title: "1003 — Military Service",
+      script:
+        "One more standard question — are you (or your spouse) a current or former member of the U.S. Armed Forces?",
+      coach:
+        "If yes, the military service questions come up next. If no, we skip straight to the declarations.",
+      fields: [["militaryService", "Current or former U.S. military service?", "select", "No|Yes"]],
+      routes: [
+        ["Yes — served / serving", "jump:11"],
+        ["No", "declarations"]
+      ]
+    },
+    {
+      title: "1003 — Military Service Details",
+      script: "Thank you for your service. A few details for the application.",
+      coach: "Maps to the URLA/1003 military service section.",
+      fields: [
+        ["militaryStatusType", "Military Status", "select", "Active Duty|Retired / Discharged / Separated|Non-Activated Reserve or National Guard|Surviving Spouse"],
+        ["militaryBranch", "Branch of Service"],
+        ["militaryExpirationDate", "Projected active-duty expiration / separation date"],
+        ["militaryVALoan", "Using a VA loan benefit?", "select", "No|Yes"]
       ],
       routes: [["Continue to declarations", "declarations"]]
     }

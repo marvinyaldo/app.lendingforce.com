@@ -108,10 +108,19 @@ function citizenshipType(v: unknown): string {
 
 /** marital status -> MISMO MaritalStatusType */
 function maritalType(v: unknown): string {
+  // MISMO MaritalStatusType only allows Married / Separated / Unmarried.
+  // Check the "un/divorced/widowed" cases before "married" ("unmarried"
+  // contains "married"), and fold divorced/widowed/single into Unmarried.
   const s = String(v ?? "").toLowerCase();
-  if (s.includes("married")) return "Married";
   if (s.includes("separated")) return "Separated";
-  if (s.includes("unmarried") || s.includes("single")) return "Unmarried";
+  if (
+    s.includes("unmarried") ||
+    s.includes("divorced") ||
+    s.includes("widow") ||
+    s.includes("single")
+  )
+    return "Unmarried";
+  if (s.includes("married")) return "Married";
   return "";
 }
 
